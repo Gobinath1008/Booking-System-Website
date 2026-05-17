@@ -171,8 +171,8 @@ export default function SuperAdminDashboard() {
           </div>
         </div>
         
-        <nav className="flex-1 px-4 space-y-1 mt-4 overflow-y-auto">
-          <p className="px-3 text-[10px] font-semibold text-slate-400 mb-2 uppercase tracking-wider">Menu</p>
+        <nav className="flex-1 px-4 space-y-2.5 mt-6 overflow-y-auto">
+          <p className="px-3 text-[10px] font-semibold text-slate-400 mb-3 uppercase tracking-wider">Menu</p>
           {[
             { id: 'overview', label: 'Overview', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /> },
             { id: 'users', label: 'Users', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /> },
@@ -183,13 +183,13 @@ export default function SuperAdminDashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 activeTab === tab.id
-                  ? 'bg-slate-100 text-slate-900'
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                  ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10 translate-x-1'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 hover:translate-x-1'
               }`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 {tab.icon}
               </svg>
               {tab.label}
@@ -200,7 +200,7 @@ export default function SuperAdminDashboard() {
         <div className="p-4 border-t border-slate-200">
           <button
             onClick={() => setShowAdminModal(true)}
-            className="w-full py-2 bg-slate-900 hover:bg-black text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm"
+            className="w-full py-3 bg-slate-950 hover:bg-slate-800 text-white text-sm font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:-translate-y-0.5 active:translate-y-0"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
             New Admin

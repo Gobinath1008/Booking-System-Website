@@ -259,13 +259,41 @@ export default function SmartCalendar({
     const bookedCount = data?.bookedCount || 0;
     const totalSlots = data?.totalSlots || 7;
 
+    if (data?.isBlocked) {
+      const displayLabel = data.blockedDescription || data.blockedReason || 'Blocked';
+      return (
+        <div
+          className="w-full h-full flex flex-col items-center justify-between p-1 cursor-pointer transition-all duration-200 hover:scale-105"
+          onMouseEnter={() => setTooltipData({ date: args.date, data, dateStr })}
+          onMouseLeave={() => setTooltipData(null)}
+          style={{ minHeight: '65px' }}
+        >
+          {/* Date number at top-left/center */}
+          <span className="text-xs font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full mt-0.5">
+            {args.dayNumberText}
+          </span>
+          {/* Centered reason/purpose badge */}
+          <div className="w-full flex-grow flex items-center justify-center my-1.5">
+            <div 
+              className="bg-red-600 text-white text-[9px] font-black uppercase tracking-wider py-1 px-1.5 rounded shadow-sm text-center w-[92%] truncate"
+              title={displayLabel}
+            >
+              {displayLabel}
+            </div>
+          </div>
+          {/* Tiny lock icon at bottom */}
+          <span className="text-[10px] opacity-75">🔒</span>
+        </div>
+      );
+    }
+
     return (
       <div
         className="relative w-full h-full flex flex-col items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105"
         onMouseEnter={() => setTooltipData({ date: args.date, data, dateStr })}
         onMouseLeave={() => setTooltipData(null)}
       >
-        <span className={`text-sm font-semibold ${color ? (data.isBlocked ? 'text-red-700' : 'text-white') : 'text-gray-700'}`}>
+        <span className={`text-sm font-semibold ${color ? 'text-white' : 'text-gray-700'}`}>
           {args.dayNumberText}
         </span>
         {data && !data.isBlocked && (
@@ -277,11 +305,6 @@ export default function SmartCalendar({
                 backgroundColor: color,
               }}
             />
-          </div>
-        )}
-        {data?.isBlocked && (
-          <div className="absolute bottom-1 text-[10px] font-bold text-red-600">
-            🚫 Blocked
           </div>
         )}
         {bookedCount > 0 && !data?.isBlocked && (
