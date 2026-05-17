@@ -124,13 +124,12 @@ const formatTime12h = (timeStr) => {
     const content = `
       <html>
       <head>
-        <title>My Bookings</title>
+        <title>Knowledge Institute of Technology, Salem</title>
         <style>
           body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-          h1 { text-align: center; color: #333; }
           table { width: 100%; border-collapse: collapse; margin-top: 20px; }
           th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-          th { background-color: #6C63FF; color: white; font-weight: bold; }
+          th { background-color: #1e3a8a; color: white; font-weight: bold; }
           tr:nth-child(even) { background-color: #f9f9f9; }
           .status { font-weight: bold; padding: 4px 8px; border-radius: 4px; }
           .pending { background: rgba(243,156,18,0.2); color: #F39C12; }
@@ -140,8 +139,19 @@ const formatTime12h = (timeStr) => {
         </style>
       </head>
       <body>
-        <h1>My Bookings Report</h1>
-        <p>Generated on: ${new Date().toLocaleString()}</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <img src="/logo.png" alt="KIOT Logo" style="height: 60px; width: auto;" />
+            <div>
+              <div style="font-size: 20px; font-weight: bold; color: #1e3a8a; font-family: Arial, sans-serif;">KNOWLEDGE INSTITUTE OF TECHNOLOGY</div>
+              <div style="font-size: 14px; color: #475569; font-family: Arial, sans-serif; letter-spacing: 1px;">SALEM</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 18px; font-weight: bold; color: #334155; font-family: Arial, sans-serif;">Booking Report</div>
+            <div style="font-size: 11px; color: #64748b; font-family: Arial, sans-serif; margin-top: 4px;">Generated: ${new Date().toLocaleString()}</div>
+          </div>
+        </div>
         <table>
           <thead>
             <tr>
@@ -157,12 +167,15 @@ const formatTime12h = (timeStr) => {
                 <td>${SERVICE_NAMES[b.serviceType]}</td>
                 <td>${getBookingDetails(b).date}</td>
                 <td><strong>${getBookingDetails(b).location}</strong><br/><small>${getBookingDetails(b).description}</small><br/><small>By: ${b.guestName || b.user?.name || 'Unknown'}</small></td>
-                <td><span class="status ${b.status}">${b.status.toUpperCase()}</span></td>
+                <td>
+                  <span class="status ${b.status}">${b.status.toUpperCase()}</span>
+                  ${b.actionBy?.name && b.status !== 'pending' ? `<br/><small style="color: #666; font-size: 11px;">${b.status === 'approved' ? 'Approved by:' : b.status === 'rejected' ? 'Rejected by:' : 'Cancelled by:'} ${b.actionBy.name}</small>` : ''}
+                </td>
               </tr>
             `).join('')}
           </tbody>
         </table>
-        <p style="margin-top: 20px;">Total Bookings: ${filtered.length}</p>
+        <p style="margin-top: 20px; font-weight: bold;">Total Bookings: ${filtered.length}</p>
       </body>
       </html>
     `;

@@ -90,9 +90,60 @@ export default function RoomBookingPage() {
     }
   };
 
-  const getRoomStatus = (roomId) => {
-    const isBooked = dateBookings.some(b => b.serviceId === roomId && b.status !== 'rejected' && b.status !== 'cancelled');
-    return isBooked ? 'fully-booked' : 'available';
+  const getRoomStatusDetails = (roomId) => {
+    const roomBookings = dateBookings.filter(b => b.serviceId === roomId && b.status !== 'rejected' && b.status !== 'cancelled');
+    
+    if (roomBookings.length === 0) {
+      return { status: 'available', label: 'Available' };
+    }
+
+    const hasMultiDay = roomBookings.some(b => b.roomCheckInDate !== b.roomCheckOutDate);
+    
+    const parseTimeToMinutes = (timeStr) => {
+      if (!timeStr) return 0;
+      const [h, m] = timeStr.split(':').map(Number);
+      return isNaN(h) ? 0 : h * 60 + (m || 0);
+    };
+
+    let totalHours = 0;
+    if (hasMultiDay) {
+      totalHours = 24; // > 2 hours
+    } else {
+      let totalMinutes = 0;
+      roomBookings.forEach(b => {
+        const start = parseTimeToMinutes(b.roomCheckInTime || '14:00');
+        const end = parseTimeToMinutes(b.roomCheckOutTime || '12:00');
+        if (end > start) {
+          totalMinutes += (end - start);
+        }
+      });
+      totalHours = totalMinutes / 60;
+    }
+
+    let isMorning = true;
+    if (roomBookings[0]?.roomCheckInTime) {
+      const firstStartHour = parseInt(roomBookings[0].roomCheckInTime.split(':')[0], 10);
+      if (firstStartHour >= 12) {
+        isMorning = false;
+      }
+    }
+
+    if (totalHours <= 2) {
+      return {
+        status: 'partially-booked',
+        label: `Partially Booked (${isMorning ? 'Morning' : 'Evening'})`
+      };
+    } else if (totalHours <= 4) {
+      return {
+        status: 'partially-booked',
+        label: `Partially Booked (${isMorning ? 'Morning to Afternoon' : 'Afternoon to Evening'})`
+      };
+    } else {
+      return {
+        status: 'fully-booked',
+        label: 'Booked (Morning to Evening)'
+      };
+    }
   };
 
   const formatPrice = (price) => {
@@ -180,7 +231,10 @@ export default function RoomBookingPage() {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
               {rooms.map((room, idx) => {
-                const status = getRoomStatus(room._id);
+                const statusDetails = getRoomStatusDetails(room._id);
+                const status = statusDetails.status;
+                const statusLabel = statusDetails.label;
+                const roomBookings = dateBookings.filter(b => b.serviceId === room._id && b.status !== 'rejected' && b.status !== 'cancelled');
                 return (
                 <motion.div
                   key={room._id}
@@ -213,11 +267,11 @@ export default function RoomBookingPage() {
                         <p style={{ fontSize: '14px', color: '#6b7280' }}>Room {room.roomNumber} • Floor {room.floor}</p>
                       </div>
                       <span className={`badge`} style={{
-                        background: status === 'available' ? '#dcfce7' : '#fee2e2',
-                        color: status === 'available' ? '#166534' : '#991b1b',
+                        background: status === 'available' ? '#dcfce7' : status === 'partially-booked' ? '#fef08a' : '#fee2e2',
+                        color: status === 'available' ? '#166534' : status === 'partially-booked' ? '#854d0e' : '#991b1b',
                         padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: '600'
                       }}>
-                        {status === 'available' ? 'Available' : 'Booked'}
+                        {statusLabel}
                       </span>
                     </div>
 
@@ -240,6 +294,62 @@ export default function RoomBookingPage() {
                         {room.amenities.length > 4 && (
                           <span className="chip" style={{ fontSize: '11px' }}>+{room.amenities.length - 4}</span>
                         )}
+                      </div>
+                    )}
+
+                    {/* Booking Details Section */}
+                    {roomBookings.length > 0 && (
+                      <div style={{
+                        marginTop: '16px',
+                        marginBottom: '16px',
+                        padding: '12px',
+                        borderRadius: '12px',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                      }}>
+                        <div style={{
+                          fontSize: '13px',
+                          fontWeight: '700',
+                          color: '#475569',
+                          marginBottom: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          <span>🗓️</span> Active Bookings
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {roomBookings.map((b) => {
+                            const parseTimeToMinutes = (timeStr) => {
+                              if (!timeStr) return 0;
+                              const [h, m] = timeStr.split(':').map(Number);
+                              return isNaN(h) ? 0 : h * 60 + (m || 0);
+                            };
+                            const start = parseTimeToMinutes(b.roomCheckInTime || '14:00');
+                            const end = parseTimeToMinutes(b.roomCheckOutTime || '12:00');
+                            const isPartial = b.roomCheckInDate === b.roomCheckOutDate && (end - start) / 60 <= 4;
+                            return (
+                            <div key={b._id} style={{
+                              background: '#ffffff',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                              borderLeft: '4px solid #ef4444',
+                              fontSize: '13px'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  👤 {b.user?.name || b.guestName || 'User'}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: '12px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <div>🛫 <strong>Check-In:</strong> {b.roomCheckInDate} {b.roomCheckInTime ? `at ${b.roomCheckInTime}` : ''}</div>
+                                <div>🛬 <strong>Check-Out:</strong> {b.roomCheckOutDate} {b.roomCheckOutTime ? `at ${b.roomCheckOutTime}` : ''}</div>
+                              </div>
+                            </div>
+                          );
+                          })}
+                        </div>
                       </div>
                     )}
 

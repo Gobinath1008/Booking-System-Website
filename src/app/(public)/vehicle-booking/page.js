@@ -87,9 +87,60 @@ export default function VehicleBookingPage() {
     }
   };
 
-  const getVehicleStatus = (vehicleId) => {
-    const isBooked = dateBookings.some(b => b.serviceId === vehicleId && b.status !== 'rejected' && b.status !== 'cancelled');
-    return isBooked ? 'fully-booked' : 'available';
+  const getVehicleStatusDetails = (vehicleId) => {
+    const vehicleBookings = dateBookings.filter(b => b.serviceId === vehicleId && b.status !== 'rejected' && b.status !== 'cancelled');
+    
+    if (vehicleBookings.length === 0) {
+      return { status: 'available', label: 'Available' };
+    }
+
+    const hasMultiDay = vehicleBookings.some(b => b.vehiclePickupDate !== b.vehicleReturnDate);
+    
+    const parseTimeToMinutes = (timeStr) => {
+      if (!timeStr) return 0;
+      const [h, m] = timeStr.split(':').map(Number);
+      return isNaN(h) ? 0 : h * 60 + (m || 0);
+    };
+
+    let totalHours = 0;
+    if (hasMultiDay) {
+      totalHours = 24; // > 2 hours
+    } else {
+      let totalMinutes = 0;
+      vehicleBookings.forEach(b => {
+        const start = parseTimeToMinutes(b.vehiclePickupTime || '08:00');
+        const end = parseTimeToMinutes(b.vehicleReturnTime || '18:00');
+        if (end > start) {
+          totalMinutes += (end - start);
+        }
+      });
+      totalHours = totalMinutes / 60;
+    }
+
+    let isMorning = true;
+    if (vehicleBookings[0]?.vehiclePickupTime) {
+      const firstStartHour = parseInt(vehicleBookings[0].vehiclePickupTime.split(':')[0], 10);
+      if (firstStartHour >= 12) {
+        isMorning = false;
+      }
+    }
+
+    if (totalHours <= 2) {
+      return {
+        status: 'partially-booked',
+        label: `Partially Booked (${isMorning ? 'Morning' : 'Evening'})`
+      };
+    } else if (totalHours <= 4) {
+      return {
+        status: 'partially-booked',
+        label: `Partially Booked (${isMorning ? 'Morning to Afternoon' : 'Afternoon to Evening'})`
+      };
+    } else {
+      return {
+        status: 'fully-booked',
+        label: 'Booked (Morning to Evening)'
+      };
+    }
   };
 
   const formatPrice = (price) => {
@@ -177,7 +228,10 @@ export default function VehicleBookingPage() {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
               {vehicles.map((vehicle, idx) => {
-                const status = getVehicleStatus(vehicle._id);
+                const statusDetails = getVehicleStatusDetails(vehicle._id);
+                const status = statusDetails.status;
+                const statusLabel = statusDetails.label;
+                const vehicleBookings = dateBookings.filter(b => b.serviceId === vehicle._id && b.status !== 'rejected' && b.status !== 'cancelled');
                 return (
                 <motion.div
                   key={vehicle._id}
@@ -210,11 +264,11 @@ export default function VehicleBookingPage() {
                         <p style={{ fontSize: '14px', color: '#6b7280' }}>{vehicle.model} • {vehicle.year}</p>
                       </div>
                       <span className={`badge`} style={{
-                        background: status === 'available' ? '#dcfce7' : '#fee2e2',
-                        color: status === 'available' ? '#166534' : '#991b1b',
+                        background: status === 'available' ? '#dcfce7' : status === 'partially-booked' ? '#fef08a' : '#fee2e2',
+                        color: status === 'available' ? '#166534' : status === 'partially-booked' ? '#854d0e' : '#991b1b',
                         padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: '600'
                       }}>
-                        {status === 'available' ? 'Available' : 'Booked'}
+                        {statusLabel}
                       </span>
                     </div>
 
@@ -231,6 +285,62 @@ export default function VehicleBookingPage() {
                         {vehicle.features.length > 3 && (
                           <span className="chip" style={{ fontSize: '11px' }}>+{vehicle.features.length - 3}</span>
                         )}
+                      </div>
+                    )}
+
+                    {/* Booking Details Section */}
+                    {vehicleBookings.length > 0 && (
+                      <div style={{
+                        marginTop: '16px',
+                        marginBottom: '16px',
+                        padding: '12px',
+                        borderRadius: '12px',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                      }}>
+                        <div style={{
+                          fontSize: '13px',
+                          fontWeight: '700',
+                          color: '#475569',
+                          marginBottom: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          <span>🗓️</span> Active Bookings
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {vehicleBookings.map((b) => {
+                            const parseTimeToMinutes = (timeStr) => {
+                              if (!timeStr) return 0;
+                              const [h, m] = timeStr.split(':').map(Number);
+                              return isNaN(h) ? 0 : h * 60 + (m || 0);
+                            };
+                            const start = parseTimeToMinutes(b.vehiclePickupTime || '08:00');
+                            const end = parseTimeToMinutes(b.vehicleReturnTime || '18:00');
+                            const isPartial = b.vehiclePickupDate === b.vehicleReturnDate && (end - start) / 60 <= 4;
+                            return (
+                            <div key={b._id} style={{
+                              background: '#ffffff',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                              borderLeft: '4px solid #ef4444',
+                              fontSize: '13px'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  👤 {b.user?.name || b.guestName || 'User'}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: '12px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <div>🛫 <strong>From:</strong> {b.vehiclePickupDate} {b.vehiclePickupTime ? `at ${b.vehiclePickupTime}` : ''}</div>
+                                <div>🛬 <strong>To:</strong> {b.vehicleReturnDate} {b.vehicleReturnTime ? `at ${b.vehicleReturnTime}` : ''}</div>
+                              </div>
+                            </div>
+                          );
+                          })}
+                        </div>
                       </div>
                     )}
 

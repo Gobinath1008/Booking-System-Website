@@ -19,26 +19,59 @@ const hasOverlap = (start1, end1, start2, end2) => {
 };
 
 export async function GET(request) {
-  const { user, error } = await requireAuth(request);
-  if (error) return error;
-
   await connectDB();
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
   const serviceType = searchParams.get('serviceType');
   const userId = searchParams.get('userId');
   const all = searchParams.get('all') === 'true';
+  const hallDate = searchParams.get('hallDate');
+
+  let user = null;
+  let authError = null;
+  try {
+    const authResult = await requireAuth(request);
+    if (authResult.error) {
+      authError = authResult.error;
+    } else {
+      user = authResult.user;
+    }
+  } catch (err) {
+    authError = NextResponse.json({ message: 'Authentication error' }, { status: 500 });
+  }
+
+  // If they want their own bookings specifically (!all), they MUST be authenticated
+  if (!all) {
+    if (authError) return authError;
+  }
 
   let query = {};
 
-  if (!all && user.role !== 'super-admin' && user.role !== 'admin') {
-    query.user = user.id;
-  } else if (all && user.role !== 'super-admin' && user.role !== 'admin') {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
+  if (!all) {
+    // fetching their own bookings (for standard users) OR fetching all bookings (for admins)
+    if (user.role !== 'super-admin' && user.role !== 'admin') {
+      query.user = user.id;
+      if (status) query.status = status;
+    } else {
+      // admin / super-admin fetching without all=true (from the Manage Bookings page)
+      if (status) query.status = status;
+      if (userId) query.user = userId;
+    }
+  } else {
+    // fetching all bookings (e.g., checking availability)
+    // If not logged in OR is a regular user/customer, they can only see approved/pending bookings
+    if (!user || (user.role !== 'super-admin' && user.role !== 'admin')) {
+      query.status = { $in: ['approved', 'pending'] };
+    } else {
+      // admin / super-admin can filter by status/userId
+      if (status) query.status = status;
+      if (userId) query.user = userId;
+    }
   }
 
-  if (status) query.status = status;
-  if (userId && (user.role !== 'user' && user.role !== 'customer')) query.user = userId;
+  if (hallDate && (!serviceType || serviceType === 'hall')) {
+    query.hallDate = hallDate;
+  }
 
   let halls = [], vehicles = [], rooms = [];
   const populateOpts = [

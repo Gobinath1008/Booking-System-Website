@@ -108,13 +108,15 @@ function VehicleDetailForm() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-1">Pickup Date *</label>
-                      <input type="date" className="form-input" required
+                      <input type="date" className="form-input" required disabled
+                        style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
                         min={new Date().toISOString().split('T')[0]}
                         value={form.pickupDate} onChange={e => setForm({...form, pickupDate: e.target.value})} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Return Date *</label>
-                      <input type="date" className="form-input" required
+                      <input type="date" className="form-input" required disabled
+                        style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
                         min={form.pickupDate || new Date().toISOString().split('T')[0]}
                         value={form.returnDate} onChange={e => setForm({...form, returnDate: e.target.value})} />
                     </div>

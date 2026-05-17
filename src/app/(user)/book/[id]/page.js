@@ -40,11 +40,47 @@ function BookForm() {
 
   const today = new Date().toISOString().split('T')[0];
 
+  const [existingBookings, setExistingBookings] = useState([]);
+
   useEffect(() => {
     fetch(`/api/halls?id=${id}`).then(r => r.json()).then(d => { setHall(d); setPageLoading(false); });
   }, [id]);
 
+  useEffect(() => {
+    if (!form.date) return;
+    fetch(`/api/bookings?all=true&hallDate=${form.date}`)
+      .then(r => r.json())
+      .then(d => {
+        const hallBookings = (Array.isArray(d) ? d : []).filter(
+          b => b.serviceId === id && b.status !== 'rejected' && b.status !== 'cancelled'
+        );
+        setExistingBookings(hallBookings);
+      });
+  }, [form.date, id]);
+
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: '' })); };
+
+  const handleDateChange = (newDate) => {
+    setForm(f => ({ ...f, date: newDate, startTime: '', endTime: '' }));
+    setErrors(e => ({ ...e, date: '', startTime: '', endTime: '' }));
+  };
+
+  const isStartTimeBooked = (t) => {
+    return existingBookings.some(b => t >= b.hallStartTime && t < b.hallEndTime);
+  };
+
+  const isEndTimeDisabled = (t) => {
+    if (!form.startTime) {
+      return existingBookings.some(b => t > b.hallStartTime && t <= b.hallEndTime);
+    }
+    if (t <= form.startTime) return true;
+    
+    // Check if the end time itself falls inside a booked range
+    if (existingBookings.some(b => t > b.hallStartTime && t <= b.hallEndTime)) return true;
+
+    // Check if selecting this end time would overlap with an existing booking that starts after our selected start time
+    return existingBookings.some(b => b.hallStartTime >= form.startTime && t > b.hallStartTime);
+  };
 
   const validate = () => {
     const errs = {};
@@ -91,7 +127,7 @@ function BookForm() {
   return (
     <div className={styles.page}>
       <div className="container">
-        <Link href={`/halls/${id}`} className={styles.backBtn}>← Back to Hall Details</Link>
+        <Link href="/halls" className={styles.backBtn}>← Back to Halls</Link>
         <div className={styles.layout}>
           {/* Form */}
           <div>
@@ -112,9 +148,9 @@ function BookForm() {
             <form onSubmit={handleSubmit}>
               {/* Date */}
               <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>📅 Select Date</h2>
+                <h2 className={styles.sectionTitle}>📅 Date</h2>
                 <input id="booking-date" type="date" className={`form-input ${errors.date ? 'error' : ''}`}
-                  min={today} value={form.date} onChange={e => set('date', e.target.value)} />
+                  min={today} value={form.date} disabled />
                 {errors.date && <div className="error-msg">{errors.date}</div>}
               </div>
 
@@ -122,11 +158,15 @@ function BookForm() {
               <div className={styles.section}>
                 <h2 className={styles.sectionTitle}>🕐 Start Time</h2>
                 <div className={styles.timeSlots}>
-                  {TIME_SLOTS.slice(0, -1).map(t => (
-                    <button key={t} type="button"
-                      className={`${styles.timeSlot} ${form.startTime === t ? styles.slotActive : ''}`}
-                      onClick={() => set('startTime', t)}>{formatTime12h(t)}</button>
-                  ))}
+                  {TIME_SLOTS.slice(0, -1).map(t => {
+                    const booked = isStartTimeBooked(t);
+                    return (
+                      <button key={t} type="button"
+                        className={`${styles.timeSlot} ${form.startTime === t ? styles.slotActive : ''} ${booked ? styles.slotDisabled : ''}`}
+                        onClick={() => !booked && set('startTime', t)}
+                        disabled={booked}>{formatTime12h(t)}</button>
+                    );
+                  })}
                 </div>
                 {errors.startTime && <div className="error-msg">{errors.startTime}</div>}
               </div>
@@ -134,11 +174,15 @@ function BookForm() {
               <div className={styles.section}>
                 <h2 className={styles.sectionTitle}>🕕 End Time</h2>
                 <div className={styles.timeSlots}>
-                  {TIME_SLOTS.slice(1).map(t => (
-                    <button key={t} type="button"
-                      className={`${styles.timeSlot} ${form.endTime === t ? styles.slotActive : ''} ${form.startTime && t <= form.startTime ? styles.slotDisabled : ''}`}
-                      onClick={() => set('endTime', t)} disabled={!!form.startTime && t <= form.startTime}>{formatTime12h(t)}</button>
-                  ))}
+                  {TIME_SLOTS.slice(1).map(t => {
+                    const disabled = isEndTimeDisabled(t);
+                    return (
+                      <button key={t} type="button"
+                        className={`${styles.timeSlot} ${form.endTime === t ? styles.slotActive : ''} ${disabled ? styles.slotDisabled : ''}`}
+                        onClick={() => !disabled && set('endTime', t)}
+                        disabled={disabled}>{formatTime12h(t)}</button>
+                    );
+                  })}
                 </div>
                 {errors.endTime && <div className="error-msg">{errors.endTime}</div>}
                 {duration > 0 && (

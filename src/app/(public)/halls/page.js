@@ -68,12 +68,54 @@ export default function HallBookingPage() {
     }
   };
 
-  const getHallStatus = (hallId) => {
+  const getHallStatusDetails = (hallId) => {
     const hallBookings = dateBookings.filter(b => b.serviceId === hallId && b.status !== 'rejected' && b.status !== 'cancelled');
-    // Assuming 7 slots total per day
-    if (hallBookings.length >= 7) return 'fully-booked';
-    if (hallBookings.length > 0) return 'partially-booked';
-    return 'available';
+    
+    if (hallBookings.length === 0) {
+      return { status: 'available', label: 'Available' };
+    }
+
+    const parseTimeToMinutes = (timeStr) => {
+      if (!timeStr) return 0;
+      const [h, m] = timeStr.split(':').map(Number);
+      return isNaN(h) ? 0 : h * 60 + (m || 0);
+    };
+
+    let totalMinutes = 0;
+    hallBookings.forEach(b => {
+      const start = parseTimeToMinutes(b.hallStartTime);
+      const end = parseTimeToMinutes(b.hallEndTime);
+      if (end > start) {
+        totalMinutes += (end - start);
+      }
+    });
+
+    const totalHours = totalMinutes / 60;
+    
+    let isMorning = true;
+    if (hallBookings[0]?.hallStartTime) {
+      const firstStartHour = parseInt(hallBookings[0].hallStartTime.split(':')[0], 10);
+      if (firstStartHour >= 12) {
+        isMorning = false;
+      }
+    }
+
+    if (totalHours <= 2) {
+      return {
+        status: 'partially-booked',
+        label: `Partially Booked (${isMorning ? 'Morning' : 'Evening'})`
+      };
+    } else if (totalHours <= 4) {
+      return {
+        status: 'partially-booked',
+        label: `Partially Booked (${isMorning ? 'Morning to Afternoon' : 'Afternoon to Evening'})`
+      };
+    } else {
+      return {
+        status: 'fully-booked',
+        label: 'Booked (Morning to Evening)'
+      };
+    }
   };
 
   return (
@@ -157,7 +199,10 @@ export default function HallBookingPage() {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
               {halls.map((hall, idx) => {
-                const status = getHallStatus(hall._id);
+                const statusDetails = getHallStatusDetails(hall._id);
+                const status = statusDetails.status;
+                const statusLabel = statusDetails.label;
+                const hallBookings = dateBookings.filter(b => b.serviceId === hall._id && b.status !== 'rejected' && b.status !== 'cancelled');
                 return (
                 <motion.div
                   key={hall._id}
@@ -198,7 +243,7 @@ export default function HallBookingPage() {
                         color: status === 'available' ? '#166534' : status === 'partially-booked' ? '#854d0e' : '#991b1b',
                         padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: '600'
                       }}>
-                        {status === 'available' ? 'Available' : status === 'partially-booked' ? 'Partially Booked' : 'Fully Booked'}
+                        {statusLabel}
                       </span>
                     </div>
 
@@ -218,6 +263,64 @@ export default function HallBookingPage() {
                             +{hall.facilities.length - 4}
                           </span>
                         )}
+                      </div>
+                    )}
+
+                    {/* Booking Details Section */}
+                    {hallBookings.length > 0 && (
+                      <div style={{
+                        marginTop: '16px',
+                        marginBottom: '16px',
+                        padding: '12px',
+                        borderRadius: '12px',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                      }}>
+                        <div style={{
+                          fontSize: '13px',
+                          fontWeight: '700',
+                          color: '#475569',
+                          marginBottom: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          <span>🗓️</span> Active Bookings
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {hallBookings.map((b) => {
+                            const parseTimeToMinutes = (timeStr) => {
+                              if (!timeStr) return 0;
+                              const [h, m] = timeStr.split(':').map(Number);
+                              return isNaN(h) ? 0 : h * 60 + (m || 0);
+                            };
+                            const start = parseTimeToMinutes(b.hallStartTime);
+                            const end = parseTimeToMinutes(b.hallEndTime);
+                            const isPartial = (end - start) / 60 <= 4;
+                            return (
+                            <div key={b._id} style={{
+                              background: '#ffffff',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                              borderLeft: '4px solid #ef4444',
+                              fontSize: '13px'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '600', color: '#1e293b', marginBottom: '2px' }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  👤 {b.user?.name || b.guestName || 'User'}
+                                </span>
+                                <span style={{ color: '#ef4444', fontSize: '12px', fontWeight: '700' }}>
+                                  ⏰ {b.hallStartTime} - {b.hallEndTime}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: '12px', color: '#64748b' }}>
+                                💼 Purpose: {b.purpose || 'Not specified'}
+                              </div>
+                            </div>
+                          );
+                          })}
+                        </div>
                       </div>
                     )}
 
