@@ -158,69 +158,83 @@ export default function SuperAdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex font-sans text-slate-900 selection:bg-slate-200 selection:text-black">
-      {/* Sidebar */}
-      <aside className="w-[260px] bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0 z-40">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center">
-            <span className="text-white text-xs font-bold tracking-wider">SA</span>
-          </div>
+    <div className="min-h-screen bg-[#f8fafc] py-8 selection:bg-slate-200 selection:text-black">
+      <div className="container mx-auto px-4 max-w-7xl">
+        {/* Dashboard Title & Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-sm font-bold text-slate-900 leading-none">Super Admin</h1>
-            <p className="text-[11px] text-slate-500 mt-1">Control Panel</p>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 flex items-center gap-3">
+              <span className="p-2 bg-indigo-50 text-indigo-600 rounded-2xl shadow-sm border border-indigo-100">👑</span>
+              Super Admin Workspace
+            </h1>
+            <p className="text-slate-500 font-medium mt-1">Manage administrators, control users permissions, and monitor system booking records.</p>
+          </div>
+          <div className="flex gap-3">
+            <Link href="/" className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl transition-all border border-slate-200 shadow-sm flex items-center gap-2 hover:-translate-y-0.5">
+              Public Site ↗
+            </Link>
+            <button
+              onClick={() => setShowAdminModal(true)}
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-md shadow-indigo-600/10 flex items-center gap-2 hover:-translate-y-0.5"
+            >
+              + New Admin
+            </button>
           </div>
         </div>
-        
-        <nav className="flex-1 px-4 space-y-2.5 mt-6 overflow-y-auto">
-          <p className="px-3 text-[10px] font-semibold text-slate-400 mb-3 uppercase tracking-wider">Menu</p>
-          {[
-            { id: 'overview', label: 'Overview', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /> },
-            { id: 'users', label: 'Users', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /> },
-            { id: 'admins', label: 'Administrators', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /> },
-            { id: 'bookings', label: 'Bookings', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /> },
-            { id: 'services', label: 'Services', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /> }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                activeTab === tab.id
-                  ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10 translate-x-1'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 hover:translate-x-1'
-              }`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                {tab.icon}
-              </svg>
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-        
-        <div className="p-4 border-t border-slate-200">
-          <button
-            onClick={() => setShowAdminModal(true)}
-            className="w-full py-3 bg-slate-950 hover:bg-slate-800 text-white text-sm font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:-translate-y-0.5 active:translate-y-0"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
-            New Admin
-          </button>
-        </div>
-      </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-y-auto">
-        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 px-8 py-5 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-slate-900 capitalize tracking-tight">
-            {activeTab.replace('-', ' ')}
-          </h2>
-          <Link href="/" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm hover:bg-slate-50">
-            Public Site
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-          </Link>
-        </header>
-        
-        <div className="p-8 max-w-7xl mx-auto w-full">
+        {/* Outer Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Sidebar Floating Card - 3 columns */}
+          <aside className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl shadow-sm sticky top-24 z-30" style={{ padding: '24px' }}>
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+              <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-sm">
+                <span className="text-white text-sm font-black tracking-wider">SA</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 leading-tight">Control Panel</h3>
+                <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">System Menu</p>
+              </div>
+            </div>
+
+            <nav style={{ display: 'flex', flexDirection: 'column' }}>
+              {[
+                { id: 'overview', label: 'Overview', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /> },
+                { id: 'users', label: 'Users', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /> },
+                { id: 'admins', label: 'Administrators', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /> },
+                { id: 'bookings', label: 'Bookings', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /> },
+                { id: 'services', label: 'Services', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /> }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`transition-all duration-200 ${
+                    activeTab === tab.id
+                      ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10 translate-x-1'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 hover:translate-x-1'
+                  }`}
+                  style={{
+                    padding: '14px 20px',
+                    marginBottom: '12px',
+                    borderRadius: '12px',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '14px',
+                    fontSize: '14.5px',
+                    fontWeight: '700'
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} style={{ flexShrink: 0 }}>
+                    {tab.icon}
+                  </svg>
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+          </aside>
+
+          {/* Tab Content Panel - 9 columns */}
+          <main className="lg:col-span-9">
         
         {/* Overview Tab */}
         {activeTab === 'overview' && (
@@ -487,144 +501,145 @@ export default function SuperAdminDashboard() {
           </motion.div>
         )}
 
+          </main>
         </div>
-      </main>
 
-      {/* User Permission Modal */}
-      <AnimatePresence>
-        {showUserModal && (
-          <motion.div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowUserModal(null)}>
-            <motion.div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-200" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} onClick={(e) => e.stopPropagation()}>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold text-slate-900">Manage Permissions</h2>
-                <button onClick={() => setShowUserModal(null)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-              </div>
-              
-              <div className="flex items-center gap-3 mb-6 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-white text-slate-900 flex items-center justify-center font-semibold text-sm border border-slate-200 shadow-sm">
-                  {showUserModal.name?.charAt(0).toUpperCase()}
+        {/* User Permission Modal */}
+        <AnimatePresence>
+          {showUserModal && (
+            <motion.div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowUserModal(null)}>
+              <motion.div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-200" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-lg font-semibold text-slate-900">Manage Permissions</h2>
+                  <button onClick={() => setShowUserModal(null)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
                 </div>
-                <div>
-                  <div className="font-semibold text-slate-900 text-sm">{showUserModal.name}</div>
-                  <div className="text-slate-500 text-xs">{showUserModal.email}</div>
-                </div>
-              </div>
-
-              <div className="space-y-5">
-                <div>
-                  <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Role Settings</h4>
-                  <div className="mb-6">
-                    <select 
-                      value={showUserModal.role} 
-                      onChange={(e) => handleUpdateUserPermissions(showUserModal._id, { role: e.target.value })}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-shadow shadow-sm cursor-pointer"
-                    >
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
-                    </select>
+                
+                <div className="flex items-center gap-3 mb-6 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="w-10 h-10 rounded-full bg-white text-slate-900 flex items-center justify-center font-semibold text-sm border border-slate-200 shadow-sm">
+                    {showUserModal.name?.charAt(0).toUpperCase()}
                   </div>
+                  <div>
+                    <div className="font-semibold text-slate-900 text-sm">{showUserModal.name}</div>
+                    <div className="text-slate-500 text-xs">{showUserModal.email}</div>
+                  </div>
+                </div>
 
-                  <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Service Access</h4>
-                  <div className="space-y-2 mb-6">
-                    {[
-                      { id: 'hallAccess', icon: '🏛️', label: 'Halls Booking' },
-                      { id: 'vehicleAccess', icon: '🚗', label: 'Vehicles Booking' },
-                      { id: 'guestRoomAccess', icon: '🏨', label: 'Rooms Booking' }
-                    ].map(service => {
-                      const isAllowed = showUserModal.permissions?.[service.id] !== false;
-                      return (
-                        <div key={service.id} className="flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-white">
-                          <div className="flex items-center gap-2">
-                            <span className="text-base">{service.icon}</span>
-                            <span className="text-sm font-medium text-slate-800">{service.label}</span>
+                <div className="space-y-5">
+                  <div>
+                    <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Role Settings</h4>
+                    <div className="mb-6">
+                      <select 
+                        value={showUserModal.role} 
+                        onChange={(e) => handleUpdateUserPermissions(showUserModal._id, { role: e.target.value })}
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-shadow shadow-sm cursor-pointer"
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+
+                    <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Service Access</h4>
+                    <div className="space-y-2 mb-6">
+                      {[
+                        { id: 'hallAccess', icon: '🏛️', label: 'Halls Booking' },
+                        { id: 'vehicleAccess', icon: '🚗', label: 'Vehicles Booking' },
+                        { id: 'guestRoomAccess', icon: '🏨', label: 'Rooms Booking' }
+                      ].map(service => {
+                        const isAllowed = showUserModal.permissions?.[service.id] !== false;
+                        return (
+                          <div key={service.id} className="flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-white">
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">{service.icon}</span>
+                              <span className="text-sm font-medium text-slate-800">{service.label}</span>
+                            </div>
+                            <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                              <label className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${isAllowed ? 'bg-white shadow-sm text-emerald-700' : 'text-slate-500 hover:text-slate-700'}`}>
+                                <input type="radio" name={`service-${service.id}`} className="hidden" checked={isAllowed} onChange={() => { if (!isAllowed) handleUpdateUserPermissions(showUserModal._id, { [service.id]: true }) }} />
+                                Allowed
+                              </label>
+                              <label className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${!isAllowed ? 'bg-white shadow-sm text-red-700' : 'text-slate-500 hover:text-slate-700'}`}>
+                                <input type="radio" name={`service-${service.id}`} className="hidden" checked={!isAllowed} onChange={() => { if (isAllowed) handleUpdateUserPermissions(showUserModal._id, { [service.id]: false }) }} />
+                                Blocked
+                              </label>
+                            </div>
                           </div>
-                          <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-                            <label className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${isAllowed ? 'bg-white shadow-sm text-emerald-700' : 'text-slate-500 hover:text-slate-700'}`}>
-                              <input type="radio" name={`service-${service.id}`} className="hidden" checked={isAllowed} onChange={() => { if (!isAllowed) handleUpdateUserPermissions(showUserModal._id, { [service.id]: true }) }} />
-                              Allowed
-                            </label>
-                            <label className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${!isAllowed ? 'bg-white shadow-sm text-red-700' : 'text-slate-500 hover:text-slate-700'}`}>
-                              <input type="radio" name={`service-${service.id}`} className="hidden" checked={!isAllowed} onChange={() => { if (isAllowed) handleUpdateUserPermissions(showUserModal._id, { [service.id]: false }) }} />
-                              Blocked
-                            </label>
-                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Account Restrictions</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-white">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{showUserModal.permissions?.blocked ? '🔒' : '✅'}</span>
+                          <span className="text-sm font-medium text-slate-800">Account Login</span>
                         </div>
-                      );
-                    })}
-                  </div>
-
-                  <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Account Restrictions</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-white">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base">{showUserModal.permissions?.blocked ? '🔒' : '✅'}</span>
-                        <span className="text-sm font-medium text-slate-800">Account Login</span>
-                      </div>
-                      <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-                        <label className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${!showUserModal.permissions?.blocked ? 'bg-white shadow-sm text-emerald-700' : 'text-slate-500 hover:text-slate-700'}`}>
-                          <input type="radio" name="account-status" className="hidden" checked={!showUserModal.permissions?.blocked} onChange={() => handleUpdateUserPermissions(showUserModal._id, { blockUser: false })} />
-                          Active
-                        </label>
-                        <label className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${showUserModal.permissions?.blocked ? 'bg-white shadow-sm text-red-700' : 'text-slate-500 hover:text-slate-700'}`}>
-                          <input type="radio" name="account-status" className="hidden" checked={!!showUserModal.permissions?.blocked} onChange={() => handleUpdateUserPermissions(showUserModal._id, { blockUser: true })} />
-                          Suspended
-                        </label>
+                        <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                          <label className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${!showUserModal.permissions?.blocked ? 'bg-white shadow-sm text-emerald-700' : 'text-slate-500 hover:text-slate-700'}`}>
+                            <input type="radio" name="account-status" className="hidden" checked={!showUserModal.permissions?.blocked} onChange={() => handleUpdateUserPermissions(showUserModal._id, { blockUser: false })} />
+                            Active
+                          </label>
+                          <label className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${showUserModal.permissions?.blocked ? 'bg-white shadow-sm text-red-700' : 'text-slate-500 hover:text-slate-700'}`}>
+                            <input type="radio" name="account-status" className="hidden" checked={!!showUserModal.permissions?.blocked} onChange={() => handleUpdateUserPermissions(showUserModal._id, { blockUser: true })} />
+                            Suspended
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
 
-      {/* Admin Creation Modal */}
-      <AnimatePresence>
-        {showAdminModal && (
-          <motion.div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAdminModal(false)}>
-            <motion.div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-200" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} onClick={(e) => e.stopPropagation()}>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold text-slate-900">Add Administrator</h2>
-                <button onClick={() => setShowAdminModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-              </div>
-              <form onSubmit={handleCreateAdmin} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">Full Name</label>
-                  <input type="text" value={newAdmin.name} onChange={e => setNewAdmin({...newAdmin, name: e.target.value})} className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-shadow shadow-sm placeholder:text-slate-400" placeholder="Jane Doe" required />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">Email Address</label>
-                  <input type="email" value={newAdmin.email} onChange={e => setNewAdmin({...newAdmin, email: e.target.value})} className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-shadow shadow-sm placeholder:text-slate-400" placeholder="jane@example.com" required />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">Password</label>
-                  <input type="password" value={newAdmin.password} onChange={e => setNewAdmin({...newAdmin, password: e.target.value})} className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-shadow shadow-sm placeholder:text-slate-400" placeholder="••••••••" required minLength={6} />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-2 mt-1">Assigned Modules</label>
-                  <div className="flex flex-wrap gap-2">
-                    {['halls', 'vehicles', 'rooms'].map(service => (
-                      <button key={service} type="button" onClick={() => setNewAdmin(prev => ({ ...prev, assignedServices: prev.assignedServices.includes(service) ? prev.assignedServices.filter(s => s !== service) : [...prev.assignedServices, service] }))} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors capitalize ${newAdmin.assignedServices.includes(service) ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
-                        {service}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <button type="submit" disabled={adminLoading} className="w-full py-2.5 bg-slate-900 hover:bg-black text-white font-medium rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center">
-                    {adminLoading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'Create Account'}
+        {/* Admin Creation Modal */}
+        <AnimatePresence>
+          {showAdminModal && (
+            <motion.div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAdminModal(false)}>
+              <motion.div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-200" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-lg font-semibold text-slate-900">Add Administrator</h2>
+                  <button onClick={() => setShowAdminModal(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 </div>
-              </form>
+                <form onSubmit={handleCreateAdmin} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1.5">Full Name</label>
+                    <input type="text" value={newAdmin.name} onChange={e => setNewAdmin({...newAdmin, name: e.target.value})} className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-shadow shadow-sm placeholder:text-slate-400" placeholder="Jane Doe" required />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1.5">Email Address</label>
+                    <input type="email" value={newAdmin.email} onChange={e => setNewAdmin({...newAdmin, email: e.target.value})} className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-shadow shadow-sm placeholder:text-slate-400" placeholder="jane@example.com" required />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1.5">Password</label>
+                    <input type="password" value={newAdmin.password} onChange={e => setNewAdmin({...newAdmin, password: e.target.value})} className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-shadow shadow-sm placeholder:text-slate-400" placeholder="••••••••" required minLength={6} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-2 mt-1">Assigned Modules</label>
+                    <div className="flex flex-wrap gap-2">
+                      {['halls', 'vehicles', 'rooms'].map(service => (
+                        <button key={service} type="button" onClick={() => setNewAdmin(prev => ({ ...prev, assignedServices: prev.assignedServices.includes(service) ? prev.assignedServices.filter(s => s !== service) : [...prev.assignedServices, service] }))} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors capitalize ${newAdmin.assignedServices.includes(service) ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
+                          {service}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="pt-2">
+                    <button type="submit" disabled={adminLoading} className="w-full py-2.5 bg-slate-900 hover:bg-black text-white font-medium rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center">
+                      {adminLoading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'Create Account'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
