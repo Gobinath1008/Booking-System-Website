@@ -82,33 +82,33 @@ const formatTime12h = (timeStr) => {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0a0a12', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-        <div style={{ width: 44, height: 44, border: '3px solid rgba(124,111,255,0.2)', borderTopColor: '#7c6fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-        <p style={{ color: 'rgba(180,180,220,0.6)', fontSize: 14, fontWeight: 600 }}>Loading Dashboard…</p>
+      <div style={{ minHeight: '100vh', background: '#f5f6fa', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <div style={{ width: 44, height: 44, border: '3px solid rgba(91,79,232,0.1)', borderTopColor: '#5b4fe8', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+        <p style={{ color: '#4b5563', fontSize: 14, fontWeight: 600 }}>Loading Dashboard…</p>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #070711 0%, #0f0c28 40%, #070b1a 100%)' }}>
+    <div style={{ minHeight: '100vh', background: '#f5f6fa' }}>
 
       {/* ── Top Header ── */}
       <header style={{
-        background: 'rgba(10,10,18,0.85)', backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(20px)',
+        borderBottom: '1.5px solid #e2e6f3',
         position: 'sticky', top: 0, zIndex: 20,
       }}>
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 68 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: 40, height: 40, borderRadius: 12,
-              background: 'linear-gradient(135deg, #7c6fff, #4cc9f0)',
+              background: 'linear-gradient(135deg, #5b4fe8, #0ea5e9)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
-              boxShadow: '0 4px 16px rgba(124,111,255,0.4)',
+              boxShadow: '0 4px 16px rgba(91,79,232,0.3)',
             }}>🏛️</div>
             <div>
-              <h1 style={{ fontSize: 17, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Admin Portal</h1>
-              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Hall Management</p>
+              <h1 style={{ fontSize: 17, fontWeight: 800, color: '#1a1a2e', lineHeight: 1.2 }}>Admin Portal</h1>
+              <p style={{ fontSize: 11, color: '#4b5563', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Hall Management</p>
             </div>
           </div>
           <Link href="/admin/bookings?status=pending">
@@ -116,9 +116,9 @@ const formatTime12h = (timeStr) => {
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px',
-                background: 'linear-gradient(135deg, #7c6fff, #5a50cc)',
+                background: 'linear-gradient(135deg, #5b4fe8, #4338ca)',
                 color: '#fff', fontSize: 13, fontWeight: 700,
-                borderRadius: 10, boxShadow: '0 4px 16px rgba(124,111,255,0.4)',
+                borderRadius: 10, boxShadow: '0 4px 16px rgba(91,79,232,0.25)',
                 border: 'none', cursor: 'pointer',
               }}
             >
@@ -132,8 +132,8 @@ const formatTime12h = (timeStr) => {
 
         {/* Welcome */}
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 36 }}>
-          <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', marginBottom: 6 }}>Welcome back, Admin 👋</h2>
-          <p style={{ color: 'rgba(180,180,220,0.65)', fontSize: 15 }}>Here's an overview of your hall bookings and management tools.</p>
+          <h2 style={{ fontSize: 28, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-0.5px', marginBottom: 6 }}>Welcome back, Admin 👋</h2>
+          <p style={{ color: '#4b5563', fontSize: 15 }}>Here's an overview of your hall bookings and management tools.</p>
         </motion.div>
 
         {/* Stats */}
@@ -144,43 +144,43 @@ const formatTime12h = (timeStr) => {
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
               style={{
-                background: 'rgba(255,255,255,0.04)', border: `1px solid rgba(255,255,255,0.07)`,
-                borderRadius: 20, padding: '24px', backdropFilter: 'blur(16px)',
+                background: '#ffffff', border: `1.5px solid #e2e6f3`,
+                borderRadius: 20, padding: '24px',
                 borderTop: `3px solid ${s.color}`,
                 transition: 'all 0.3s ease',
               }}
-              whileHover={{ y: -4, boxShadow: `0 16px 40px rgba(0,0,0,0.4), 0 0 30px ${s.glow}` }}
+              whileHover={{ y: -4, boxShadow: `0 12px 30px rgba(91,79,232,0.06), 0 0 20px ${s.glow}40` }}
             >
-              <div style={{ fontSize: 30, marginBottom: 12, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' }}>{s.icon}</div>
-              <div style={{ fontSize: 36, fontWeight: 900, color: '#fff', letterSpacing: '-1.5px', marginBottom: 4 }}>{s.value}</div>
-              <div style={{ fontSize: 11, color: 'rgba(180,180,220,0.6)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>{s.label}</div>
+              <div style={{ fontSize: 30, marginBottom: 12, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.05))' }}>{s.icon}</div>
+              <div style={{ fontSize: 36, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-1.5px', marginBottom: 4 }}>{s.value}</div>
+              <div style={{ fontSize: 11, color: '#4b5563', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>{s.label}</div>
             </motion.div>
           ))}
         </div>
 
         {/* Quick Tools */}
         <section style={{ marginBottom: 40 }}>
-          <h3 style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 20 }}>Quick Tools</h3>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e', marginBottom: 20 }}>Quick Tools</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px,1fr))', gap: 16 }}>
             {QUICK_TOOLS.map((t, i) => (
               <Link key={t.href} href={t.href}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 + i * 0.08 }}
-                  whileHover={{ y: -5, boxShadow: `0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px ${t.color}40` }}
+                  whileHover={{ y: -5, boxShadow: `0 12px 30px rgba(91,79,232,0.08), 0 0 0 1.5px ${t.color}50` }}
                   style={{
-                    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 20, padding: '28px 24px', backdropFilter: 'blur(16px)',
+                    background: '#ffffff', border: '1.5px solid #e2e6f3',
+                    borderRadius: 20, padding: '28px 24px',
                     cursor: 'pointer', transition: 'all 0.3s ease', display: 'flex', flexDirection: 'column', gap: 8,
                   }}
                 >
                   <div style={{
                     width: 52, height: 52, borderRadius: 14, marginBottom: 8,
-                    background: `${t.color}18`, border: `1px solid ${t.color}30`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26,
+                    background: `${t.color}10`, border: `1.5px solid ${t.color}25`,
+                    display: 'flex', alignItems: 'center', justifycontent: 'center', fontSize: 26,
                   }}>{t.icon}</div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{t.label}</div>
-                  <div style={{ fontSize: 13, color: 'rgba(180,180,220,0.6)' }}>{t.sub}</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: '#1a1a2e' }}>{t.label}</div>
+                  <div style={{ fontSize: 13, color: '#4b5563' }}>{t.sub}</div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: t.color, marginTop: 8 }}>Open →</div>
                 </motion.div>
               </Link>
@@ -191,32 +191,36 @@ const formatTime12h = (timeStr) => {
         {/* Recent Bookings */}
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>Recent Booking Requests</h3>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e' }}>Recent Booking Requests</h3>
             <Link href="/admin/bookings">
               <span style={{
-                fontSize: 13, color: '#7c6fff', fontWeight: 700, padding: '7px 16px',
-                background: 'rgba(124,111,255,0.1)', borderRadius: 9, border: '1px solid rgba(124,111,255,0.25)',
+                fontSize: 13, color: '#5b4fe8', fontWeight: 700, padding: '7px 16px',
+                background: '#f5f3ff', borderRadius: 9, border: '1.5px solid #e2e6f3',
                 transition: 'all 0.2s', cursor: 'pointer',
-              }}>View All</span>
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#5b4fe8'; e.currentTarget.style.background = '#ebe7ff'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e6f3'; e.currentTarget.style.background = '#f5f3ff'; }}
+              >View All</span>
             </Link>
           </div>
 
           <div style={{
-            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: 20, overflow: 'hidden', backdropFilter: 'blur(16px)',
+            background: '#ffffff', border: '1.5px solid #e2e6f3',
+            borderRadius: 20, overflow: 'hidden',
+            boxShadow: '0 4px 20px rgba(91,79,232,0.03)',
           }}>
             {recent.length === 0 ? (
               <div style={{ padding: '60px 20px', textAlign: 'center' }}>
-                <div style={{ fontSize: 52, marginBottom: 16, opacity: 0.5 }}>📭</div>
-                <p style={{ color: 'rgba(180,180,220,0.5)', fontSize: 15 }}>No bookings yet. They'll appear here when submitted.</p>
+                <div style={{ fontSize: 52, marginBottom: 16, opacity: 0.8 }}>📭</div>
+                <p style={{ color: '#9ca3af', fontSize: 15 }}>No bookings yet. They'll appear here when submitted.</p>
               </div>
             ) : (
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #e2e6f3' }}>
                       {['User Details', 'Schedule', 'Purpose', 'Status', ''].map(h => (
-                        <th key={h} style={{ padding: '14px 18px', fontSize: 11, fontWeight: 700, color: 'rgba(180,180,220,0.5)', textTransform: 'uppercase', letterSpacing: '0.8px', textAlign: 'left' }}>{h}</th>
+                        <th key={h} style={{ padding: '14px 18px', fontSize: 11, fontWeight: 700, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.8px', textAlign: 'left' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -226,30 +230,30 @@ const formatTime12h = (timeStr) => {
                       const statusColor = b.status === 'approved' ? '#2ecc71' : b.status === 'pending' ? '#f39c12' : '#e74c3c';
                       const statusBg = b.status === 'approved' ? 'rgba(46,204,113,0.1)' : b.status === 'pending' ? 'rgba(243,156,18,0.1)' : 'rgba(231,76,60,0.1)';
                       return (
-                        <tr key={b._id} style={{ borderTop: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.15s' }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,111,255,0.05)'}
+                        <tr key={b._id} style={{ borderTop: '1.5px solid #eef0f8', transition: 'background 0.15s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#fcfcff'}
                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                         >
                           <td style={{ padding: '14px 18px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <div style={{
                                 width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-                                background: 'linear-gradient(135deg, #7c6fff, #4cc9f0)',
+                                background: 'linear-gradient(135deg, #5b4fe8, #0ea5e9)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 color: '#fff', fontWeight: 800, fontSize: 15,
                               }}>{b.user?.name?.[0]?.toUpperCase() || '?'}</div>
                               <div>
-                                <div style={{ fontWeight: 700, color: '#fff', fontSize: 14 }}>{b.user?.name || 'Unknown'}</div>
-                                <div style={{ fontSize: 12, color: 'rgba(180,180,220,0.5)' }}>{b.user?.department || b.user?.role || 'User'}</div>
+                                <div style={{ fontWeight: 700, color: '#1a1a2e', fontSize: 14 }}>{b.user?.name || 'Unknown'}</div>
+                                <div style={{ fontSize: 12, color: '#4b5563' }}>{b.user?.department || b.user?.role || 'User'}</div>
                               </div>
                             </div>
                           </td>
                           <td style={{ padding: '14px 18px' }}>
-                            <div style={{ fontWeight: 600, color: '#fff', fontSize: 14 }}>{d.date}</div>
-                            {d.time && <div style={{ fontSize: 12, color: 'rgba(180,180,220,0.5)', marginTop: 2 }}>{d.time}</div>}
+                            <div style={{ fontWeight: 600, color: '#1a1a2e', fontSize: 14 }}>{d.date}</div>
+                            {d.time && <div style={{ fontSize: 12, color: '#4b5563', marginTop: 2 }}>{d.time}</div>}
                           </td>
                           <td style={{ padding: '14px 18px' }}>
-                            <div style={{ fontSize: 13, color: 'rgba(200,200,240,0.7)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.info || '—'}</div>
+                            <div style={{ fontSize: 13, color: '#4b5563', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.info || '—'}</div>
                           </td>
                           <td style={{ padding: '14px 18px' }}>
                             <span style={{
@@ -264,12 +268,12 @@ const formatTime12h = (timeStr) => {
                               <span style={{
                                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                                 width: 32, height: 32, borderRadius: 8,
-                                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                                color: 'rgba(180,180,220,0.5)', fontSize: 14, cursor: 'pointer',
+                                background: '#f5f6fa', border: '1.5px solid #e2e6f3',
+                                color: '#4b5563', fontSize: 14, cursor: 'pointer',
                                 transition: 'all 0.2s',
                               }}
-                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,111,255,0.15)'; e.currentTarget.style.color = '#7c6fff'; e.currentTarget.style.borderColor = 'rgba(124,111,255,0.3)'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(180,180,220,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                                onMouseEnter={e => { e.currentTarget.style.background = '#f5f3ff'; e.currentTarget.style.color = '#5b4fe8'; e.currentTarget.style.borderColor = '#c4b5fd'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = '#f5f6fa'; e.currentTarget.style.color = '#4b5563'; e.currentTarget.style.borderColor = '#e2e6f3'; }}
                               >›</span>
                             </Link>
                           </td>

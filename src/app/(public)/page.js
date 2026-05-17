@@ -79,12 +79,12 @@ export default function HomePage() {
   });
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #070711 0%, #0f0c28 40%, #070b1a 100%)', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#f5f6fa', position: 'relative', overflow: 'hidden' }}>
       {/* Ambient blobs */}
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-        <div style={{ position: 'absolute', top: '-15%', left: '-10%', width: '55%', height: '60%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,111,255,0.14) 0%, transparent 70%)', animation: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '-20%', right: '-5%',  width: '50%', height: '60%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(76,201,240,0.10) 0%, transparent 70%)' }} />
-        <div style={{ position: 'absolute', top: '40%', left: '35%', width: '30%', height: '40%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(247,37,133,0.06) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', top: '-15%', left: '-10%', width: '55%', height: '60%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(91,79,232,0.06) 0%, transparent 70%)', animation: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-20%', right: '-5%',  width: '50%', height: '60%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(14,165,233,0.04) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', top: '40%', left: '35%', width: '30%', height: '40%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(91,79,232,0.03) 0%, transparent 70%)' }} />
       </div>
 
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '80px 24px', position: 'relative', zIndex: 1 }}>
@@ -98,46 +98,47 @@ export default function HomePage() {
         >
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: 'rgba(124,111,255,0.12)', border: '1px solid rgba(124,111,255,0.3)',
+            background: '#f5f3ff', border: '1.5px solid #c4b5fd',
             borderRadius: 999, padding: '6px 18px', fontSize: 12, fontWeight: 700,
-            color: '#a899ff', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 20,
+            color: '#5b4fe8', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 20,
           }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4cc9f0', boxShadow: '0 0 8px #4cc9f0', display: 'inline-block' }} />
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#0ea5e9', display: 'inline-block' }} />
             Campus Resource Management
           </span>
 
           <h1 style={{
-            fontSize: 'clamp(2.4rem, 5vw, 4rem)', fontWeight: 900, color: '#fff',
+            fontSize: 'clamp(2.4rem, 5vw, 4rem)', fontWeight: 900, color: '#1a1a2e',
             lineHeight: 1.08, letterSpacing: '-1.5px', marginBottom: 20,
           }}>
             Book College Resources{' '}
             <span style={{
-              background: 'linear-gradient(135deg, #7c6fff, #4cc9f0)',
+              background: 'linear-gradient(135deg, #5b4fe8, #0ea5e9)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>
               Instantly
             </span>
           </h1>
 
-          <p style={{ fontSize: '1.1rem', color: 'rgba(200,200,255,0.75)', maxWidth: 560, margin: '0 auto 36px', lineHeight: 1.8 }}>
+          <p style={{ fontSize: '1.1rem', color: '#4b5563', maxWidth: 560, margin: '0 auto 36px', lineHeight: 1.8 }}>
             Select a module below to check availability, make reservations, and manage your bookings — all in one place.
           </p>
 
           {/* Live stats bar */}
           <div style={{
             display: 'inline-flex', gap: 0,
-            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 16, overflow: 'hidden', backdropFilter: 'blur(20px)',
+            background: '#ffffff', border: '1.5px solid #e2e6f3',
+            borderRadius: 16, overflow: 'hidden',
+            boxShadow: '0 4px 20px rgba(91,79,232,0.03)',
           }}>
             {STATS.map((s, i) => (
               <div key={s.key} style={{
                 padding: '14px 24px', textAlign: 'center',
-                borderRight: i < STATS.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                borderRight: i < STATS.length - 1 ? '1.5px solid #eef0f8' : 'none',
               }}>
-                <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#fff', lineHeight: 1 }}>
+                <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#1a1a2e', lineHeight: 1 }}>
                   {loading ? '—' : stats[s.key]}
                 </div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 4, fontWeight: 600, letterSpacing: '0.5px' }}>
+                <div style={{ fontSize: 11, color: '#4b5563', marginTop: 4, fontWeight: 600, letterSpacing: '0.5px' }}>
                   {s.icon} {s.label}
                 </div>
               </div>
@@ -156,19 +157,18 @@ export default function HomePage() {
             >
               <div style={{
                 borderRadius: 24, overflow: 'hidden',
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                backdropFilter: 'blur(20px)',
+                background: '#ffffff',
+                border: '1.5px solid #e2e6f3',
                 transition: 'all 0.4s cubic-bezier(.4,0,.2,1)',
                 display: 'flex', flexDirection: 'column', height: '100%',
               }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.border = `1px solid ${svc.accent}60`;
+                  e.currentTarget.style.border = `1.5px solid ${svc.accent}80`;
                   e.currentTarget.style.transform = 'translateY(-8px)';
-                  e.currentTarget.style.boxShadow = `0 24px 60px rgba(0,0,0,0.4), 0 0 40px ${svc.accent}20`;
+                  e.currentTarget.style.boxShadow = `0 12px 36px rgba(91,79,232,0.08), 0 0 25px ${svc.accent}15`;
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)';
+                  e.currentTarget.style.border = '1.5px solid #e2e6f3';
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
@@ -198,20 +198,20 @@ export default function HomePage() {
 
                 {/* Body */}
                 <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', marginBottom: 8 }}>{svc.title}</h2>
-                  <p style={{ color: 'rgba(200,200,240,0.7)', fontSize: 14, lineHeight: 1.7, flexGrow: 1, marginBottom: 20 }}>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1a1a2e', marginBottom: 8 }}>{svc.title}</h2>
+                  <p style={{ color: '#4b5563', fontSize: 14, lineHeight: 1.7, flexGrow: 1, marginBottom: 20 }}>
                     {svc.description}
                   </p>
 
                   <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '12px 0', borderTop: '1px solid rgba(255,255,255,0.06)',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: 20,
+                    padding: '12px 0', borderTop: '1.5px solid #eef0f8',
+                    borderBottom: '1.5px solid #eef0f8', marginBottom: 20,
                   }}>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>Available Now</span>
+                    <span style={{ fontSize: 13, color: '#4b5563', fontWeight: 500 }}>Available Now</span>
                     {loading
-                      ? <div style={{ width: 20, height: 20, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                      : <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff', background: 'rgba(255,255,255,0.1)', padding: '4px 12px', borderRadius: 8 }}>
+                      ? <div style={{ width: 20, height: 20, border: '2px solid rgba(91,79,232,0.2)', borderTopColor: '#5b4fe8', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                      : <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#5b4fe8', background: '#f5f3ff', padding: '4px 12px', borderRadius: 8 }}>
                           {stats[svc.id]}
                         </span>
                     }
