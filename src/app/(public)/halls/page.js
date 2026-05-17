@@ -198,7 +198,14 @@ export default function HallBookingPage() {
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-              {halls.map((hall, idx) => {
+              {[...halls]
+                .sort((a, b) => {
+                  const statusPriority = { 'available': 1, 'partially-booked': 2, 'fully-booked': 3 };
+                  const priorityA = statusPriority[getHallStatusDetails(a._id).status] || 99;
+                  const priorityB = statusPriority[getHallStatusDetails(b._id).status] || 99;
+                  return priorityA - priorityB;
+                })
+                .map((hall, idx) => {
                 const statusDetails = getHallStatusDetails(hall._id);
                 const status = statusDetails.status;
                 const statusLabel = statusDetails.label;

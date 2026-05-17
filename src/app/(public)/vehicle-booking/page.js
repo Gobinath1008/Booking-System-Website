@@ -227,7 +227,14 @@ export default function VehicleBookingPage() {
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-              {vehicles.map((vehicle, idx) => {
+              {[...vehicles]
+                .sort((a, b) => {
+                  const statusPriority = { 'available': 1, 'partially-booked': 2, 'fully-booked': 3 };
+                  const priorityA = statusPriority[getVehicleStatusDetails(a._id).status] || 99;
+                  const priorityB = statusPriority[getVehicleStatusDetails(b._id).status] || 99;
+                  return priorityA - priorityB;
+                })
+                .map((vehicle, idx) => {
                 const statusDetails = getVehicleStatusDetails(vehicle._id);
                 const status = statusDetails.status;
                 const statusLabel = statusDetails.label;

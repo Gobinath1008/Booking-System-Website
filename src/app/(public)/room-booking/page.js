@@ -230,7 +230,14 @@ export default function RoomBookingPage() {
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-              {rooms.map((room, idx) => {
+              {[...rooms]
+                .sort((a, b) => {
+                  const statusPriority = { 'available': 1, 'partially-booked': 2, 'fully-booked': 3 };
+                  const priorityA = statusPriority[getRoomStatusDetails(a._id).status] || 99;
+                  const priorityB = statusPriority[getRoomStatusDetails(b._id).status] || 99;
+                  return priorityA - priorityB;
+                })
+                .map((room, idx) => {
                 const statusDetails = getRoomStatusDetails(room._id);
                 const status = statusDetails.status;
                 const statusLabel = statusDetails.label;
