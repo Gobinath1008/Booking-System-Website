@@ -6,6 +6,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 
 // Time slots configuration
 const TIME_SLOTS = [
@@ -187,6 +188,7 @@ export default function SmartCalendar({
         date: clickedDate,
         dateStr,
         blocked: true,
+        blockedId: availabilityData[dateStr].blockedId,
         reason: availabilityData[dateStr].blockedReason,
         description: availabilityData[dateStr].blockedDescription
       });
@@ -241,6 +243,31 @@ export default function SmartCalendar({
     if (!slot.available) return;
     setSelectedSlot(slot);
     if (onSlotSelect) onSlotSelect(slot, selectedInfo?.dateStr);
+  };
+
+  // Handle immediate unblock
+  const handleUnblockDate = async (blockedId) => {
+    if (!blockedId) {
+      toast.error('Blocked date ID not found.');
+      return;
+    }
+    if (!confirm('Are you sure you want to unblock this date?')) return;
+    try {
+      const res = await fetch(`/api/blocked-dates/${blockedId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        toast.success('Day unblocked successfully!');
+        setSelectedInfo(null);
+        fetchAvailability();
+      } else {
+        const err = await res.json();
+        toast.error(err.message || 'Failed to unblock date');
+      }
+    } catch (error) {
+      console.error('Failed to unblock date:', error);
+      toast.error('An error occurred while unblocking the date');
+    }
   };
 
   // Get color for day cell based on availability
@@ -515,7 +542,13 @@ export default function SmartCalendar({
           >
             <div className="p-4 md:p-6">
               {selectedInfo.blocked ? (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center w-full">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center w-full relative">
+                  <button
+                    onClick={() => setSelectedInfo(null)}
+                    className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-red-100 text-red-600 hover:bg-red-200 rounded-full transition-colors font-bold text-sm"
+                  >
+                    ✕
+                  </button>
                   <span className="text-4xl block mb-2">🚫</span>
                   <h3 className="text-lg font-black text-red-700">Date Blocked</h3>
                   <p className="text-red-800 font-semibold mt-1">
@@ -526,9 +559,21 @@ export default function SmartCalendar({
                       <strong>Purpose:</strong> {selectedInfo.description}
                     </p>
                   )}
-                  <p className="text-red-500 text-sm mt-3">
-                    Please select another date.
-                  </p>
+                  
+                  {isAdmin ? (
+                    <div className="mt-5 flex justify-center">
+                      <button
+                        onClick={() => handleUnblockDate(selectedInfo.blockedId)}
+                        className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold shadow-md shadow-red-600/10 transition-all transform hover:-translate-y-0.5"
+                      >
+                        🔓 Unblock this Day
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-red-500 text-sm mt-3">
+                      Please select another date.
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col lg:flex-row gap-6">

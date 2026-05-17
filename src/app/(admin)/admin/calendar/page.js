@@ -187,38 +187,84 @@ export default function AdminCalendarPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* Service Type Tabs */}
-        <div className="flex gap-3 flex-wrap">
-          {['hall', 'vehicle', 'room'].map((type) => (
-            <button
-              key={type}
-              onClick={() => {
-                setServiceType(type);
-                setSelectedService(null);
-              }}
-              className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 border ${serviceType === type ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/20 translate-y-0' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'}`}
-            >
-              {type === 'hall' && '🏛️ Halls'}
-              {type === 'vehicle' && '🚗 Vehicles'}
-              {type === 'room' && '🏨 Rooms'}
-            </button>
-          ))}
+      <main className="container mx-auto px-4 py-8 flex flex-col gap-6">
+        {/* Service Type Tabs Container */}
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
+          {['hall', 'vehicle', 'room'].map((type) => {
+            const isActive = serviceType === type;
+            return (
+              <button
+                key={type}
+                onClick={() => {
+                  setServiceType(type);
+                  setSelectedService(null);
+                }}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  fontWeight: '800',
+                  fontSize: '14px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  background: isActive ? '#4f46e5' : '#ffffff',
+                  color: isActive ? '#ffffff' : '#4b5563',
+                  border: isActive ? '1px solid #4f46e5' : '1px solid #e2e8f0',
+                  boxShadow: isActive ? '0 4px 12px rgba(79, 70, 229, 0.2)' : '0 1px 2px rgba(0,0,0,0.05)',
+                }}
+                className="hover:border-slate-300 hover:bg-slate-50"
+              >
+                {type === 'hall' && '🏛️ Halls'}
+                {type === 'vehicle' && '🚗 Vehicles'}
+                {type === 'room' && '🏨 Rooms'}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Service Selector */}
-        <section className="bg-white rounded-2xl p-6 shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative overflow-hidden">
+        {/* Service Selector Block */}
+        <section
+          style={{
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '16px',
+            padding: '24px',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '24px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
           {/* Decorative subtle background pattern */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full opacity-50 blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-          
-          <div className="relative z-10 w-full md:w-auto">
-            <label className="block text-sm font-bold mb-2 text-slate-700 uppercase tracking-wide">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full opacity-40 blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+
+          <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '8px', flex: '1 1 auto' }}>
+            <label style={{ fontSize: '12px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Select {serviceType}
             </label>
             <select
               value={selectedService || ''}
               onChange={(e) => setSelectedService(e.target.value)}
-              className="w-full md:w-72 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 font-medium outline-none transition-all cursor-pointer"
+              style={{
+                width: '100%',
+                maxWidth: '320px',
+                padding: '12px 16px',
+                background: '#f8fafc',
+                border: '1px solid #cbd5e1',
+                borderRadius: '12px',
+                fontSize: '15px',
+                color: '#1e293b',
+                fontWeight: '600',
+                outline: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
             >
               <option value="">Select a {serviceType}</option>
               {services.map((svc) => (
@@ -228,29 +274,72 @@ export default function AdminCalendarPage() {
               ))}
             </select>
           </div>
+
           <button
             onClick={() => setShowBlockModal(true)}
             disabled={!selectedService}
-            className="relative z-10 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_12px_rgb(0,0,0,0.1)] hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 whitespace-nowrap"
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              padding: '14px 24px',
+              background: '#0f172a',
+              color: '#ffffff',
+              borderRadius: '12px',
+              fontWeight: '700',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              border: 'none',
+              cursor: selectedService ? 'pointer' : 'not-allowed',
+              opacity: selectedService ? 1 : 0.5,
+              transition: 'all 0.2s',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            }}
+            className="hover:bg-slate-800"
           >
             🚫 Block Dates
           </button>
         </section>
 
-        {/* Tab Navigation */}
-        <nav className="flex gap-3">
-          {['calendar', 'analytics', 'bookings', 'blocked'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-200 border ${activeTab === tab ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm' : 'bg-transparent text-slate-500 border-transparent hover:bg-slate-100 hover:text-slate-700'}`}
-            >
-              {tab === 'calendar' && '📅 Calendar'}
-              {tab === 'analytics' && '📊 Analytics'}
-              {tab === 'bookings' && '📋 Bookings'}
-              {tab === 'blocked' && '🚫 Blocked'}
-            </button>
-          ))}
+        {/* Tab Navigation Segments Container */}
+        <nav
+          style={{
+            display: 'flex',
+            gap: '6px',
+            padding: '6px',
+            background: '#e2e8f0',
+            borderRadius: '9999px',
+            width: 'max-content',
+            marginBottom: '10px',
+          }}
+        >
+          {['calendar', 'analytics', 'bookings', 'blocked'].map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '9999px',
+                  fontWeight: '700',
+                  fontSize: '13.5px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  background: isActive ? '#ffffff' : 'transparent',
+                  color: isActive ? '#4f46e5' : '#4b5563',
+                  boxShadow: isActive ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+                  border: 'none',
+                }}
+              >
+                {tab === 'calendar' && '📅 Calendar'}
+                {tab === 'analytics' && '📊 Analytics'}
+                {tab === 'bookings' && '📋 Bookings'}
+                {tab === 'blocked' && '🚫 Blocked'}
+              </button>
+            );
+          })}
         </nav>
 
         {/* Content */}

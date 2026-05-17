@@ -154,6 +154,7 @@ export async function GET(request) {
         : bookings.length;
 
       const totalSlots = serviceType === 'hall' ? HALL_TIME_SLOTS.length : 1;
+      const activeBlock = isBlocked ? blockedDates.find(b => date >= b.startDate && date <= b.endDate) : null;
       const colorStatus = isBlocked
         ? { color: '#ef4444', status: 'blocked', text: 'Blocked' }
         : getColorStatus(bookedCount, totalSlots, date || dateStr);
@@ -161,8 +162,9 @@ export async function GET(request) {
       return NextResponse.json({
         date,
         isBlocked,
-        blockedReason: isBlocked ? blockedDates.find(b => date >= b.startDate && date <= b.endDate)?.reason : null,
-        blockedDescription: isBlocked ? blockedDates.find(b => date >= b.startDate && date <= b.endDate)?.description : null,
+        blockedId: activeBlock ? activeBlock._id : null,
+        blockedReason: activeBlock ? activeBlock.reason : null,
+        blockedDescription: activeBlock ? activeBlock.description : null,
         colorStatus,
         bookings: bookings.map(b => ({
           _id: b._id,
@@ -217,6 +219,7 @@ export async function GET(request) {
       availability.push({
         date: dateStr,
         isBlocked,
+        blockedId: activeBlock ? activeBlock._id : null,
         blockedReason: activeBlock ? activeBlock.reason : null,
         blockedDescription: activeBlock ? activeBlock.description : null,
         colorStatus,
