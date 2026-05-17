@@ -376,7 +376,7 @@ export default function AdminCalendarPage() {
                         <li key={bd._id} className="flex flex-col bg-white border border-slate-200 p-5 rounded-xl shadow-[0_2px_8px_rgb(0,0,0,0.02)]">
                           <div className="flex justify-between items-start mb-3">
                             <p className="font-bold text-slate-800">
-                              {format(new Date(bd.startDate), 'MMM d, yyyy')} <span className="text-slate-400 font-normal mx-1">to</span> {format(new Date(bd.endDate), 'MMM d, yyyy')}
+                              {new Date(bd.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} <span className="text-slate-400 font-normal mx-1">to</span> {new Date(bd.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </p>
                             <p className="text-sm font-medium text-slate-500 capitalize bg-slate-50 px-3 py-1 rounded-full inline-flex max-w-fit">
                               {bd.reason}

@@ -32,7 +32,7 @@ const COLORS = {
   partial: '#f59e0b',
   mostlyBooked: '#f97316',
   fullyBooked: '#ef4444',
-  blocked: '#6b7280',
+  blocked: '#ef4444',
   pending: '#3b82f6',
 };
 
@@ -183,7 +183,13 @@ export default function SmartCalendar({
 
     // Check if date is blocked
     if (availabilityData[dateStr]?.isBlocked) {
-      setSelectedInfo({ date: clickedDate, dateStr, blocked: true, reason: availabilityData[dateStr].blockedReason });
+      setSelectedInfo({
+        date: clickedDate,
+        dateStr,
+        blocked: true,
+        reason: availabilityData[dateStr].blockedReason,
+        description: availabilityData[dateStr].blockedDescription
+      });
       return;
     }
 
@@ -259,7 +265,7 @@ export default function SmartCalendar({
         onMouseEnter={() => setTooltipData({ date: args.date, data, dateStr })}
         onMouseLeave={() => setTooltipData(null)}
       >
-        <span className={`text-sm font-semibold ${color ? 'text-white' : 'text-gray-700'}`}>
+        <span className={`text-sm font-semibold ${color ? (data.isBlocked ? 'text-red-700' : 'text-white') : 'text-gray-700'}`}>
           {args.dayNumberText}
         </span>
         {data && !data.isBlocked && (
@@ -274,8 +280,8 @@ export default function SmartCalendar({
           </div>
         )}
         {data?.isBlocked && (
-          <div className="absolute bottom-1 text-[10px]">
-            <span className="text-white">🚫</span>
+          <div className="absolute bottom-1 text-[10px] font-bold text-red-600">
+            🚫 Blocked
           </div>
         )}
         {bookedCount > 0 && !data?.isBlocked && (
@@ -353,7 +359,7 @@ export default function SmartCalendar({
             <span className="text-white">Full</span>
           </div>
           <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
-            <div className="w-3 h-3 rounded-full bg-gray-500"></div>
+            <div className="w-3 h-3 rounded-full bg-red-500"></div>
             <span className="text-white">Blocked</span>
           </div>
         </div>
@@ -389,6 +395,14 @@ export default function SmartCalendar({
             slotDuration="00:30:00"
             expandRows={true}
             dayCellContent={dayCellContent}
+            dayCellDidMount={(info) => {
+              const d = info.date;
+              const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+              const data = availabilityData[dateStr];
+              if (data?.isBlocked) {
+                info.el.style.setProperty('background-color', '#fee2e2', 'important');
+              }
+            }}
           />
         </div>
       </div>
@@ -420,10 +434,15 @@ export default function SmartCalendar({
             </div>
             {tooltipData.data?.isBlocked ? (
               <div className="bg-gray-700 rounded-lg p-3">
-                <span className="text-red-400 font-semibold">🔒 Blocked</span>
-                <p className="text-gray-300 text-sm mt-1 capitalize">
-                  Reason: {tooltipData.data.blockedReason}
+                <span className="text-red-400 font-bold text-sm">🔒 Blocked</span>
+                <p className="text-gray-300 text-xs mt-1 capitalize">
+                  <strong>Reason:</strong> {tooltipData.data.blockedReason || 'maintenance'}
                 </p>
+                {tooltipData.data.blockedDescription && (
+                  <p className="text-gray-300 text-xs mt-1">
+                    <strong>Purpose:</strong> {tooltipData.data.blockedDescription}
+                  </p>
+                )}
               </div>
             ) : tooltipData.data ? (
               <div className="space-y-2">
@@ -473,12 +492,18 @@ export default function SmartCalendar({
           >
             <div className="p-4 md:p-6">
               {selectedInfo.blocked ? (
-                <div className="bg-gray-100 rounded-xl p-4 text-center">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center w-full">
                   <span className="text-4xl block mb-2">🚫</span>
-                  <h3 className="text-lg font-bold text-gray-700">Date Blocked</h3>
-                  <p className="text-gray-500 mt-1">
-                    This date is blocked for {selectedInfo.reason || 'maintenance'}.
-                    <br />
+                  <h3 className="text-lg font-black text-red-700">Date Blocked</h3>
+                  <p className="text-red-800 font-semibold mt-1">
+                    This date is blocked for: {selectedInfo.reason || 'maintenance'}.
+                  </p>
+                  {selectedInfo.description && (
+                    <p className="text-red-600 mt-2 bg-white px-4 py-2 rounded-lg border border-red-100 max-w-md mx-auto shadow-sm text-sm">
+                      <strong>Purpose:</strong> {selectedInfo.description}
+                    </p>
+                  )}
+                  <p className="text-red-500 text-sm mt-3">
                     Please select another date.
                   </p>
                 </div>
