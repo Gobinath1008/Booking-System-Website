@@ -15,8 +15,8 @@ export default function VehiclesPage() {
     year: new Date().getFullYear(),
     capacity: 5,
     fuelType: 'petrol',
-    dailyRentalPrice: '',
-    driverChargePerDay: 500,
+    dailyRentalPrice: 0,
+    driverChargePerDay: 0,
     location: '',
     city: '',
     state: '',
@@ -52,7 +52,7 @@ export default function VehiclesPage() {
         fetchVehicles();
         setFormData({
           name: '', vehicleType: 'car', registrationNumber: '', model: '', year: new Date().getFullYear(),
-          capacity: 5, fuelType: 'petrol', dailyRentalPrice: '', driverChargePerDay: 500,
+          capacity: 5, fuelType: 'petrol', dailyRentalPrice: 0, driverChargePerDay: 0,
           location: '', city: '', state: '', address: ''
         });
         setShowForm(false);
@@ -136,19 +136,7 @@ export default function VehiclesPage() {
                   <option value="electric">Electric</option>
                   <option value="hybrid">Hybrid</option>
                 </select>
-                <input
-                  type="number"
-                  placeholder="Daily Rental Price (₹)"
-                  value={formData.dailyRentalPrice}
-                  onChange={(e) => setFormData({...formData, dailyRentalPrice: parseInt(e.target.value)})}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Driver Charge per Day (₹)"
-                  value={formData.driverChargePerDay}
-                  onChange={(e) => setFormData({...formData, driverChargePerDay: parseInt(e.target.value)})}
-                />
+
                 <input
                   type="text"
                   placeholder="Location"
@@ -209,9 +197,7 @@ export default function VehiclesPage() {
                   <p style={{ marginBottom: '4px' }}>📝 Reg: {vehicle.registrationNumber}</p>
                   <p style={{ marginBottom: '4px' }}>👥 Capacity: {vehicle.capacity} seats</p>
                   <p style={{ marginBottom: '4px' }}>⛽ {vehicle.fuelType}</p>
-                  <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#27AE60', marginTop: '12px' }}>
-                    ₹{vehicle.dailyRentalPrice}/day
-                  </p>
+
                   <p style={{ color: '#999', fontSize: '12px', marginTop: '8px' }}>
                     {vehicle.city}, {vehicle.state}
                   </p>

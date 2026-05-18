@@ -57,7 +57,7 @@ export async function POST(request) {
   const body = await request.json();
   const { name, vehicleType, registrationNumber, model, year, capacity, fuelType, dailyRentalPrice, location, city, state, address } = body;
 
-  if (!name || !vehicleType || !registrationNumber || !model || !year || !capacity || !fuelType || !dailyRentalPrice || !location) {
+  if (!name || !vehicleType || !registrationNumber || !model || year === undefined || capacity === undefined || !fuelType || dailyRentalPrice === undefined || !location) {
     return NextResponse.json({ message: 'Required fields are missing' }, { status: 400 });
   }
 

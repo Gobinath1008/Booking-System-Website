@@ -13,8 +13,8 @@ export default function RoomsPage() {
     roomNumber: '',
     floor: 1,
     occupancy: 2,
-    pricePerDay: '',
-    pricePerNight: '',
+    pricePerDay: 0,
+    pricePerNight: 0,
     location: '',
     city: '',
     state: '',
@@ -51,7 +51,7 @@ export default function RoomsPage() {
         fetchRooms();
         setFormData({
           name: '', roomType: 'standard', roomNumber: '', floor: 1, occupancy: 2,
-          pricePerDay: '', pricePerNight: '', location: '', city: '', state: '',
+          pricePerDay: 0, pricePerNight: 0, location: '', city: '', state: '',
           address: '', zipCode: ''
         });
         setShowForm(false);
@@ -121,20 +121,7 @@ export default function RoomsPage() {
                   min="1"
                   required
                 />
-                <input
-                  type="number"
-                  placeholder="Price per Day (₹)"
-                  value={formData.pricePerDay}
-                  onChange={(e) => setFormData({...formData, pricePerDay: parseInt(e.target.value)})}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Price per Night (₹)"
-                  value={formData.pricePerNight}
-                  onChange={(e) => setFormData({...formData, pricePerNight: parseInt(e.target.value)})}
-                  required
-                />
+
                 <input
                   type="text"
                   placeholder="Location"
@@ -200,10 +187,7 @@ export default function RoomsPage() {
                   </p>
                   <p style={{ marginBottom: '4px' }}>Room Type: {room.roomType.toUpperCase()}</p>
                   <p style={{ marginBottom: '4px' }}>👥 Occupancy: {room.occupancy} guests</p>
-                  <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#E74C3C', marginTop: '12px' }}>
-                    ₹{room.pricePerDay}/day
-                  </p>
-                  <p style={{ color: '#999', fontSize: '12px' }}>₹{room.pricePerNight}/night</p>
+
                   <p style={{ color: '#999', fontSize: '12px', marginTop: '8px' }}>
                     {room.city}, {room.state}
                   </p>

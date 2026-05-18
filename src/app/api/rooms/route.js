@@ -59,7 +59,7 @@ export async function POST(request) {
   const body = await request.json();
   const { name, roomType, roomNumber, floor, occupancy, pricePerDay, pricePerNight, location, city, state, address, zipCode } = body;
 
-  if (!name || !roomType || !roomNumber || !floor || !occupancy || !pricePerDay || !pricePerNight || !location) {
+  if (!name || !roomType || !roomNumber || floor === undefined || occupancy === undefined || pricePerDay === undefined || pricePerNight === undefined || !location) {
     return NextResponse.json({ message: 'Required fields are missing' }, { status: 400 });
   }
 
