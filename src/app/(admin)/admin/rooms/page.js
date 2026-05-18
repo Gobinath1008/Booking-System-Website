@@ -82,77 +82,116 @@ export default function RoomsPage() {
           >
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                <input
-                  type="text"
-                  placeholder="Room Name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  required
-                />
-                <select
-                  value={formData.roomType}
-                  onChange={(e) => setFormData({...formData, roomType: e.target.value})}
-                >
-                  <option value="economy">Economy</option>
-                  <option value="standard">Standard</option>
-                  <option value="deluxe">Deluxe</option>
-                  <option value="family">Family</option>
-                  <option value="suite">Suite</option>
-                </select>
-                <input
-                  type="text"
-                  placeholder="Room Number"
-                  value={formData.roomNumber}
-                  onChange={(e) => setFormData({...formData, roomNumber: e.target.value})}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Floor"
-                  value={formData.floor}
-                  onChange={(e) => setFormData({...formData, floor: parseInt(e.target.value)})}
-                  min="0"
-                />
-                <input
-                  type="number"
-                  placeholder="Occupancy (guests)"
-                  value={formData.occupancy}
-                  onChange={(e) => setFormData({...formData, occupancy: parseInt(e.target.value)})}
-                  min="1"
-                  required
-                />
-
-                <input
-                  type="text"
-                  placeholder="Location"
-                  value={formData.location}
-                  onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="City"
-                  value={formData.city}
-                  onChange={(e) => setFormData({...formData, city: e.target.value})}
-                />
-                <input
-                  type="text"
-                  placeholder="State"
-                  value={formData.state}
-                  onChange={(e) => setFormData({...formData, state: e.target.value})}
-                />
-                <input
-                  type="text"
-                  placeholder="Address"
-                  value={formData.address}
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
-                />
-                <input
-                  type="text"
-                  placeholder="Zip Code"
-                  value={formData.zipCode}
-                  onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
-                />
+                <div className="form-group">
+                  <label className="form-label">Room Name</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Room Name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Room Type</label>
+                  <select
+                    className="form-input"
+                    value={formData.roomType}
+                    onChange={(e) => setFormData({...formData, roomType: e.target.value})}
+                  >
+                    <option value="economy">Economy</option>
+                    <option value="standard">Standard</option>
+                    <option value="deluxe">Deluxe</option>
+                    <option value="family">Family</option>
+                    <option value="suite">Suite</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Room Number</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Room Number"
+                    value={formData.roomNumber}
+                    onChange={(e) => setFormData({...formData, roomNumber: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Floor</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    placeholder="Floor"
+                    value={formData.floor}
+                    onChange={(e) => setFormData({...formData, floor: parseInt(e.target.value)})}
+                    min="0"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Occupancy (guests)</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    placeholder="Occupancy (guests)"
+                    value={formData.occupancy}
+                    onChange={(e) => setFormData({...formData, occupancy: parseInt(e.target.value)})}
+                    min="1"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Location</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Location"
+                    value={formData.location}
+                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">City</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="City"
+                    value={formData.city}
+                    onChange={(e) => setFormData({...formData, city: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">State</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="State"
+                    value={formData.state}
+                    onChange={(e) => setFormData({...formData, state: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Address</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Zip Code</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Zip Code"
+                    value={formData.zipCode}
+                    onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
+                  />
+                </div>
               </div>
               <button type="submit" className="btn-primary" style={{ marginTop: '16px' }}>
                 Add Room

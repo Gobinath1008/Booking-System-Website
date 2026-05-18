@@ -83,85 +83,128 @@ export default function VehiclesPage() {
           >
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                <input
-                  type="text"
-                  placeholder="Vehicle Name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  required
-                />
-                <select
-                  value={formData.vehicleType}
-                  onChange={(e) => setFormData({...formData, vehicleType: e.target.value})}
-                >
-                  <option value="car">Car</option>
-                  <option value="van">Van</option>
-                  <option value="bus">Bus</option>
-                  <option value="bike">Bike</option>
-                </select>
-                <input
-                  type="text"
-                  placeholder="Registration Number"
-                  value={formData.registrationNumber}
-                  onChange={(e) => setFormData({...formData, registrationNumber: e.target.value})}
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Model"
-                  value={formData.model}
-                  onChange={(e) => setFormData({...formData, model: e.target.value})}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Year"
-                  value={formData.year}
-                  onChange={(e) => setFormData({...formData, year: parseInt(e.target.value)})}
-                />
-                <input
-                  type="number"
-                  placeholder="Capacity (seats)"
-                  value={formData.capacity}
-                  onChange={(e) => setFormData({...formData, capacity: parseInt(e.target.value)})}
-                  min="1"
-                  required
-                />
-                <select
-                  value={formData.fuelType}
-                  onChange={(e) => setFormData({...formData, fuelType: e.target.value})}
-                >
-                  <option value="petrol">Petrol</option>
-                  <option value="diesel">Diesel</option>
-                  <option value="electric">Electric</option>
-                  <option value="hybrid">Hybrid</option>
-                </select>
-
-                <input
-                  type="text"
-                  placeholder="Location"
-                  value={formData.location}
-                  onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="City"
-                  value={formData.city}
-                  onChange={(e) => setFormData({...formData, city: e.target.value})}
-                />
-                <input
-                  type="text"
-                  placeholder="State"
-                  value={formData.state}
-                  onChange={(e) => setFormData({...formData, state: e.target.value})}
-                />
-                <input
-                  type="text"
-                  placeholder="Address"
-                  value={formData.address}
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
-                />
+                <div className="form-group">
+                  <label className="form-label">Vehicle Name</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Vehicle Name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Vehicle Type</label>
+                  <select
+                    className="form-input"
+                    value={formData.vehicleType}
+                    onChange={(e) => setFormData({...formData, vehicleType: e.target.value})}
+                  >
+                    <option value="car">Car</option>
+                    <option value="van">Van</option>
+                    <option value="bus">Bus</option>
+                    <option value="bike">Bike</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Registration Number</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Registration Number"
+                    value={formData.registrationNumber}
+                    onChange={(e) => setFormData({...formData, registrationNumber: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Model</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Model"
+                    value={formData.model}
+                    onChange={(e) => setFormData({...formData, model: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Year</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    placeholder="Year"
+                    value={formData.year}
+                    onChange={(e) => setFormData({...formData, year: parseInt(e.target.value)})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Capacity (seats)</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    placeholder="Capacity (seats)"
+                    value={formData.capacity}
+                    onChange={(e) => setFormData({...formData, capacity: parseInt(e.target.value)})}
+                    min="1"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Fuel Type</label>
+                  <select
+                    className="form-input"
+                    value={formData.fuelType}
+                    onChange={(e) => setFormData({...formData, fuelType: e.target.value})}
+                  >
+                    <option value="petrol">Petrol</option>
+                    <option value="diesel">Diesel</option>
+                    <option value="electric">Electric</option>
+                    <option value="hybrid">Hybrid</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Location</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Location"
+                    value={formData.location}
+                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">City</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="City"
+                    value={formData.city}
+                    onChange={(e) => setFormData({...formData, city: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">State</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="State"
+                    value={formData.state}
+                    onChange={(e) => setFormData({...formData, state: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Address</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  />
+                </div>
               </div>
               <button type="submit" className="btn-primary" style={{ marginTop: '16px' }}>
                 Add Vehicle
