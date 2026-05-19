@@ -119,12 +119,16 @@ export default function SmartCalendar({
 
   // Real-time polling
   useEffect(() => {
-    fetchAvailability();
+    setTimeout(() => {
+      fetchAvailability();
+    }, 0);
     if (enableRealtime && serviceId) {
-      const interval = setInterval(fetchAvailability, realtimeInterval);
+      const interval = setInterval(() => {
+        fetchAvailability();
+      }, realtimeInterval);
       return () => clearInterval(interval);
     }
-  }, [fetchAvailability, enableRealtime, serviceId, realtimeInterval]);
+  }, [serviceId, enableRealtime, realtimeInterval]);
 
   // Process bookings into calendar events
   useEffect(() => {
@@ -171,7 +175,9 @@ export default function SmartCalendar({
       };
     });
 
-    setEvents(calendarEvents);
+    setTimeout(() => {
+      setEvents(calendarEvents);
+    }, 0);
   }, [bookings, serviceType]);
 
   // Handle date click

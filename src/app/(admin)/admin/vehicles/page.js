@@ -23,10 +23,6 @@ export default function VehiclesPage() {
     address: ''
   });
 
-  useEffect(() => {
-    fetchVehicles();
-  }, []);
-
   const fetchVehicles = async () => {
     try {
       const res = await fetch('/api/vehicles?all=true');
@@ -38,6 +34,12 @@ export default function VehiclesPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      fetchVehicles();
+    }, 0);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -52,7 +52,7 @@ function BookForm() {
       .then(r => r.json())
       .then(d => {
         const hallBookings = (Array.isArray(d) ? d : []).filter(
-          b => b.serviceId === id && b.status !== 'rejected' && b.status !== 'cancelled'
+          b => b.serviceId === id && b.status === 'approved'
         );
         setExistingBookings(hallBookings);
       });
@@ -228,7 +228,7 @@ function BookForm() {
                 <div className={styles.summaryRow}><span>Attendees</span><strong>{form.attendees}</strong></div>
               </div>
               <div className={styles.summaryNote}>
-                ℹ️ Your request will be sent to admin for approval. You'll see the status in <strong>My Bookings</strong>.
+                ℹ️ Your request will be sent to admin for approval. You&apos;ll see the status in <strong>My Bookings</strong>.
               </div>
             </div>
           </div>

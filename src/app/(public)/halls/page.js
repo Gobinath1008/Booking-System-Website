@@ -29,6 +29,14 @@ export default function HallBookingPage() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [dateBookings, setDateBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.ok ? res.json() : null)
+      .then(user => setCurrentUser(user))
+      .catch(() => setCurrentUser(null));
+  }, []);
 
   const fetchHalls = useCallback(async () => {
     setLoading(true);
@@ -339,14 +347,14 @@ export default function HallBookingPage() {
                           </button>
                         ) : (
                           <Link
-                            href={`/book/${hall._id}?date=${selectedDate}`}
+                            href={currentUser ? `/book/${hall._id}?date=${selectedDate}` : '/login'}
                             style={{
                               width: '100%', textAlign: 'center',
                               padding: '10px 16px', borderRadius: '8px', border: 'none',
                               background: '#6C63FF', color: '#fff', fontWeight: '500', textDecoration: 'none'
                             }}
                           >
-                            Book Now →
+                            {currentUser ? 'Book Now →' : 'Login to Book →'}
                           </Link>
                         )}
                       </div>

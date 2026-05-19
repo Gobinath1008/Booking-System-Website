@@ -1,8 +1,10 @@
 'use client';
+// Force recompile
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
+import styles from '@/app/(user)/book/[id]/booking.module.css';
 
 const TYPE_ICONS = { car: '🚗', van: '🚐', bus: '🚌', bike: '🏍️' };
 
@@ -12,6 +14,8 @@ function VehicleDetailForm() {
   const dateParam = searchParams.get('date') || '';
 
   const [vehicle, setVehicle] = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     pickupDate: dateParam, returnDate: dateParam, pickupTime: '09:00', returnTime: '09:00',
@@ -22,8 +26,17 @@ function VehicleDetailForm() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch(`/api/vehicles?id=${id}`).then(r => r.json()).then(d => {
-      setVehicle(d);
+    Promise.all([
+      fetch(`/api/vehicles?id=${id}`).then(r => r.json()),
+      fetch(`/api/bookings?all=true&serviceType=vehicle`).then(r => r.json()),
+      fetch('/api/auth/me')
+    ]).then(async ([vehicleData, bookingsData, authRes]) => {
+      setVehicle(vehicleData);
+      setBookings(Array.isArray(bookingsData) ? bookingsData.filter(b => b.serviceId === id) : []);
+      if (authRes.ok) {
+        const u = await authRes.json();
+        setUser(u);
+      }
       setLoading(false);
     });
   }, [id]);
@@ -60,103 +73,107 @@ function VehicleDetailForm() {
   if (!vehicle || vehicle.message) return <div className="container p-12 text-center">Vehicle not found</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <Link href="/vehicle-booking" className="text-indigo-600 hover:underline mb-4 inline-block">← Back to Vehicles</Link>
-
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          {/* Banner */}
-          <div className="bg-gradient-to-r from-green-500 to-green-700 p-8 text-white">
-            <div className="flex items-center gap-4">
-              <span className="text-6xl">{TYPE_ICONS[vehicle.vehicleType] || '🚗'}</span>
-              <div>
-                <h1 className="text-3xl font-bold">{vehicle.name}</h1>
-                <p className="text-green-100">{vehicle.model} • {vehicle.year}</p>
+    <div className={styles.page}>
+      <div className="container">
+        <Link href="/vehicle-booking" className={styles.backBtn}>← Back to Vehicles</Link>
+        <div className={styles.layout}>
+          {/* Form */}
+          <div>
+            <div className={styles.formHeader}>
+              <h1 className={styles.formTitle}>Book a Vehicle</h1>
+              <div className={styles.hallBadge}>
+                <span>{TYPE_ICONS[vehicle.vehicleType] || '🚗'}</span>
+                <div>
+                  <div className={styles.hallBadgeName}>{vehicle?.name}</div>
+                  <div className={styles.hallBadgeCap}>Capacity: {vehicle?.capacity} seats • {vehicle?.location}</div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="p-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Vehicle Info */}
-              <div>
-                <h2 className="text-xl font-bold mb-4">Vehicle Details</h2>
-                <div className="space-y-3 text-gray-600">
-                  <p>👥 <strong>Capacity:</strong> {vehicle.capacity} seats</p>
-                  <p>⛽ <strong>Fuel:</strong> {vehicle.fuelType}</p>
-                  <p>📍 <strong>Location:</strong> {vehicle.location}</p>
-                  <p>🏷️ <strong>Type:</strong> {vehicle.vehicleType}</p>
-                  {vehicle.features?.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {vehicle.features.map(f => <span key={f} className="chip">{f}</span>)}
-                    </div>
-                  )}
-                </div>
-                <div className="mt-6 p-4 bg-green-50 rounded-xl">
-                  <div className="text-3xl font-bold text-green-600">₹{vehicle.dailyRentalPrice}</div>
-                  <div className="text-green-700">per day</div>
-                </div>
-              </div>
+            {msg && <div className="alert alert-success">{msg}</div>}
+            {error && <div className="alert alert-error">{error}</div>}
 
-              {/* Booking Form */}
-              <div>
-                <h2 className="text-xl font-bold mb-4">Book This Vehicle</h2>
-                {msg && <div className="alert alert-success mb-4">{msg}</div>}
-                {error && <div className="alert alert-error mb-4">{error}</div>}
-
-                <form onSubmit={handleSubmit} className="space-y-4">
+            {user ? (
+              <form onSubmit={handleSubmit}>
+                <div className={styles.section}>
+                  <h2 className={styles.sectionTitle}>📅 Pickup Date & Time</h2>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Pickup Date *</label>
-                      <input type="date" className="form-input" required disabled
-                        style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
-                        min={new Date().toISOString().split('T')[0]}
-                        value={form.pickupDate} onChange={e => setForm({...form, pickupDate: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Return Date *</label>
-                      <input type="date" className="form-input" required disabled
-                        style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
-                        min={form.pickupDate || new Date().toISOString().split('T')[0]}
-                        value={form.returnDate} onChange={e => setForm({...form, returnDate: e.target.value})} />
-                    </div>
+                    <input type="date" className="form-input" required
+                      min={new Date().toISOString().split('T')[0]}
+                      value={form.pickupDate} onChange={e => setForm({...form, pickupDate: e.target.value})} />
+                    <input type="time" className="form-input" required
+                      value={form.pickupTime} onChange={e => setForm({...form, pickupTime: e.target.value})} />
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Pickup Location *</label>
-                    <input type="text" className="form-input" placeholder="College campus"
+                <div className={styles.section}>
+                  <h2 className={styles.sectionTitle}>📅 Return Date & Time</h2>
+                  <div className="grid grid-cols-2 gap-4">
+                    <input type="date" className="form-input" required
+                      min={form.pickupDate || new Date().toISOString().split('T')[0]}
+                      value={form.returnDate} onChange={e => setForm({...form, returnDate: e.target.value})} />
+                    <input type="time" className="form-input" required
+                      value={form.returnTime} onChange={e => setForm({...form, returnTime: e.target.value})} />
+                  </div>
+                </div>
+
+                <div className={styles.section}>
+                  <h2 className={styles.sectionTitle}>📍 Locations</h2>
+                  <div className="grid grid-cols-2 gap-4">
+                    <input type="text" className="form-input" placeholder="Pickup Location"
                       value={form.pickupLocation} onChange={e => setForm({...form, pickupLocation: e.target.value})} required />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Return Location *</label>
-                    <input type="text" className="form-input" placeholder="Same as pickup"
+                    <input type="text" className="form-input" placeholder="Return Location"
                       value={form.returnLocation} onChange={e => setForm({...form, returnLocation: e.target.value})} required />
                   </div>
+                </div>
 
+                <div className={styles.section}>
                   <div className="flex items-center gap-2">
                     <input type="checkbox" id="driver" checked={form.withDriver}
                       onChange={e => setForm({...form, withDriver: e.target.checked})} />
-                    <label htmlFor="driver">Include Driver (+₹{vehicle.driverChargePerDay}/day)</label>
+                    <label htmlFor="driver" className="font-medium text-gray-700">Include Driver</label>
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Purpose</label>
-                    <textarea className="form-input" rows={2} placeholder="Official work, field visit..."
-                      value={form.purpose} onChange={e => setForm({...form, purpose: e.target.value})} />
-                  </div>
+                <div className={styles.section}>
+                  <h2 className={styles.sectionTitle}>📋 Purpose</h2>
+                  <textarea className="form-input" rows={3} placeholder="Official work, field visit..."
+                    value={form.purpose} onChange={e => setForm({...form, purpose: e.target.value})} style={{ resize: 'vertical' }} />
+                </div>
 
-                  <button type="submit" disabled={submitting} className="btn-primary w-full">
-                    {submitting ? 'Booking...' : '🚗 Book Vehicle'}
-                  </button>
-                </form>
+                <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={submitting}>
+                  {submitting ? '⏳ Submitting...' : '🚀 Submit Booking Request'}
+                </button>
+              </form>
+            ) : (
+              <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 text-center mt-8">
+                <p className="text-indigo-800 mb-4 font-medium">You need to be logged in to book this vehicle.</p>
+                <Link href="/login" className="btn-primary inline-flex">🔑 Login to Book</Link>
+              </div>
+            )}
+          </div>
+
+          {/* Summary sidebar */}
+          <div className={styles.summary}>
+            <div className={styles.summaryCard}>
+              <h3 className={styles.summaryTitle}>📋 Booking Summary</h3>
+              <div className={styles.summaryRows}>
+                <div className={styles.summaryRow}><span>Vehicle</span><strong>{vehicle?.name || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Type</span><strong>{vehicle?.vehicleType || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Pickup Date</span><strong>{form.pickupDate || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Pickup Time</span><strong>{form.pickupTime || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Return Date</span><strong>{form.returnDate || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Return Time</span><strong>{form.returnTime || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>With Driver</span><strong>{form.withDriver ? 'Yes' : 'No'}</strong></div>
+              </div>
+              <div className={styles.summaryNote}>
+                ℹ️ Your request will be sent to admin for approval. You&apos;ll see the status in <strong>My Bookings</strong>.
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
-    </div>
-  );
+    </div>  );
 }
 
 export default function VehicleDetailPage() {

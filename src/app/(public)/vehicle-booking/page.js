@@ -43,6 +43,14 @@ export default function VehicleBookingPage() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [dateBookings, setDateBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.ok ? res.json() : null)
+      .then(user => setCurrentUser(user))
+      .catch(() => setCurrentUser(null));
+  }, []);
 
   const fetchVehicles = useCallback(async () => {
     setLoading(true);
@@ -359,11 +367,11 @@ export default function VehicleBookingPage() {
                           </button>
                         ) : (
                           <Link
-                            href={`/vehicle-booking/${vehicle._id}?date=${selectedDate}`}
+                            href={currentUser ? `/vehicle-booking/${vehicle._id}?date=${selectedDate}` : '/login'}
                             className="btn-primary btn-sm"
                             style={{ textDecoration: 'none', width: '100%', display: 'block', textAlign: 'center' }}
                           >
-                            Book Now →
+                            {currentUser ? 'Book Now →' : 'Login to Book →'}
                           </Link>
                         )}
                       </div>

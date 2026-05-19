@@ -239,7 +239,7 @@ export async function POST(request) {
     const overlapping = await HallBooking.findOne({
       serviceId,
       hallDate,
-      status: { $in: ['approved', 'pending'] },
+      status: 'approved',
       hallStartTime: { $lt: hallEndTime },
       hallEndTime: { $gt: hallStartTime }
     });
@@ -253,7 +253,7 @@ export async function POST(request) {
   } else if (serviceType === 'vehicle') {
     const conflicts = await VehicleBooking.find({
       serviceId,
-      status: { $in: ['approved', 'pending'] }
+      status: 'approved'
     });
 
     const newStart = vehiclePickupTime ? `${vehiclePickupDate}T${vehiclePickupTime}:00` : `${vehiclePickupDate}T00:00:00`;
@@ -273,7 +273,7 @@ export async function POST(request) {
   } else if (serviceType === 'room') {
     const conflicts = await RoomBooking.find({
       serviceId,
-      status: { $in: ['approved', 'pending'] }
+      status: 'approved'
     });
 
     const newStart = roomCheckInTime ? `${roomCheckInDate}T${roomCheckInTime}:00` : `${roomCheckInDate}T14:00:00`;

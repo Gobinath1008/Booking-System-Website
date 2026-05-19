@@ -4,7 +4,35 @@ import { useSearchParams } from 'next/navigation';
 import styles from './bookings.module.css';
 
 const TABS = ['all', 'pending', 'approved', 'rejected', 'cancelled'];
-const STATUS_COLORS = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected', cancelled: 'badge-cancelled' };
+const STATUS_COLORS = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected', cancelled: 'badge-cancelled', live: 'badge-live', finished: 'badge-finished' };
+
+const getRealTimeStatus = (booking) => {
+  if (booking.status !== 'approved') return booking.status;
+
+  const now = new Date();
+  
+  if (booking.serviceType === 'hall' || booking.hallDate) {
+    const date = booking.hallDate || booking.date;
+    const startT = booking.hallStartTime || booking.startTime;
+    const endT = booking.hallEndTime || booking.endTime;
+    const start = new Date(`${date}T${startT}:00`);
+    const end = new Date(`${date}T${endT}:00`);
+    if (now >= start && now <= end) return 'live';
+    if (now > end) return 'finished';
+  } else if (booking.serviceType === 'vehicle' || booking.vehiclePickupDate) {
+    const start = new Date(`${booking.vehiclePickupDate}T${booking.vehiclePickupTime || '09:00'}:00`);
+    const end = new Date(`${booking.vehicleReturnDate}T${booking.vehicleReturnTime || '09:00'}:00`);
+    if (now >= start && now <= end) return 'live';
+    if (now > end) return 'finished';
+  } else if (booking.serviceType === 'room' || booking.roomCheckInDate) {
+    const start = new Date(`${booking.roomCheckInDate}T${booking.roomCheckInTime || '14:00'}:00`);
+    const end = new Date(`${booking.roomCheckOutDate}T${booking.roomCheckOutTime || '12:00'}:00`);
+    if (now >= start && now <= end) return 'live';
+    if (now > end) return 'finished';
+  }
+  
+  return 'approved';
+};
 
 const formatTime12h = (timeStr) => {
   if (!timeStr) return '';
@@ -199,7 +227,7 @@ function ManageBookingsContent() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <span className={`badge ${STATUS_COLORS[b.status]}`}>{b.status}</span>
+                    <span className={`badge ${STATUS_COLORS[getRealTimeStatus(b)]}`}>{getRealTimeStatus(b) === 'live' ? 'In Progress' : getRealTimeStatus(b).charAt(0).toUpperCase() + getRealTimeStatus(b).slice(1)}</span>
                     {b.status !== 'cancelled' && b.status !== 'rejected' && (
                       <button className="btn-danger btn-sm" onClick={(e) => { e.stopPropagation(); setSelected(b); setCancelReason(b.adminNote || ''); setPendingAction('cancel'); setConfirmModal(true); }} title="Cancel this booking">
                         🗑️

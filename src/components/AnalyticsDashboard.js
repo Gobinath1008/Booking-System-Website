@@ -22,10 +22,6 @@ export default function AnalyticsDashboard({
   const [loading, setLoading] = useState(true);
   const [availability, setAvailability] = useState([]);
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [serviceType, serviceId, currentMonth]);
-
   const fetchAnalytics = async () => {
     if (!serviceId) {
       setLoading(false);
@@ -74,6 +70,12 @@ export default function AnalyticsDashboard({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      fetchAnalytics();
+    }, 0);
+  }, [serviceType, serviceId, currentMonth]);
 
   const getDayColor = (dateStr) => {
     const dayData = availability.find(d => d.date === dateStr);

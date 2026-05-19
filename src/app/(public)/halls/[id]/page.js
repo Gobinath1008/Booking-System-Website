@@ -15,6 +15,7 @@ export default function HallDetailPage() {
   const [hall, setHall] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Update current time every minute to check in-progress bookings
@@ -42,12 +43,17 @@ export default function HallDetailPage() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [hallRes, bookingsRes] = await Promise.all([
+        const [hallRes, bookingsRes, authRes] = await Promise.all([
           fetch(`/api/halls?id=${id}`),
           fetch(`/api/bookings/hall/${id}?includePending=true`),
+          fetch('/api/auth/me')
         ]);
         setHall(await hallRes.json());
         const bookingsData = await bookingsRes.json();
+        if (authRes.ok) {
+          const userData = await authRes.json();
+          setUser(userData);
+        }
         // Sort by date and time using new field names
         const sorted = (Array.isArray(bookingsData) ? bookingsData : []).sort((a, b) => {
           if (a.hallDate !== b.hallDate) return (a.hallDate || '').localeCompare(b.hallDate || '');
@@ -155,9 +161,15 @@ export default function HallDetailPage() {
                 <div className={styles.bookDetail}><span>📍</span> {hall.location}</div>
                 <div className={styles.bookDetail}><span>👥</span> Up to {hall.capacity} people</div>
               </div>
-              <Link href={`/book/${hall._id}`} className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                📅 Book Now
-              </Link>
+              {user ? (
+                <Link href={`/book/${hall._id}`} className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                  📅 Book Now
+                </Link>
+              ) : (
+                <Link href="/login" className="btn-secondary" style={{ width: '100%', justifyContent: 'center', borderColor: 'var(--primary)', color: 'var(--primary)' }}>
+                  🔑 Login to Book
+                </Link>
+              )}
               <p className={styles.bookNote}>Your request will be reviewed by admin</p>
             </div>
           </div>

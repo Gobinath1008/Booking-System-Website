@@ -51,12 +51,16 @@ export default function MessagesPage() {
   };
 
   useEffect(() => {
-    fetchConversations();
+    setTimeout(() => {
+      fetchConversations();
+    }, 0);
   }, []);
 
   useEffect(() => {
     if (selectedConversation) {
-      fetchMessages(selectedConversation);
+      setTimeout(() => {
+        fetchMessages(selectedConversation);
+      }, 0);
       // Poll for new messages every 2 seconds
       const interval = setInterval(() => {
         fetchMessages(selectedConversation);

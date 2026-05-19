@@ -1,8 +1,10 @@
 'use client';
+// Force recompile
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
+import styles from '@/app/(user)/book/[id]/booking.module.css';
 
 const TYPE_ICONS = { economy: '🛏️', standard: '🛏️', deluxe: '✨', family: '👨‍👩‍👧‍👦', suite: '👑' };
 
@@ -12,6 +14,8 @@ function RoomDetailForm() {
   const dateParam = searchParams.get('date') || '';
 
   const [room, setRoom] = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     checkIn: dateParam, checkOut: dateParam, checkInTime: '14:00', checkOutTime: '12:00',
@@ -22,8 +26,17 @@ function RoomDetailForm() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch(`/api/rooms?id=${id}`).then(r => r.json()).then(d => {
-      setRoom(d);
+    Promise.all([
+      fetch(`/api/rooms?id=${id}`).then(r => r.json()),
+      fetch(`/api/bookings?all=true&serviceType=room`).then(r => r.json()),
+      fetch('/api/auth/me')
+    ]).then(async ([roomData, bookingsData, authRes]) => {
+      setRoom(roomData);
+      setBookings(Array.isArray(bookingsData) ? bookingsData.filter(b => b.serviceId === id) : []);
+      if (authRes.ok) {
+        const u = await authRes.json();
+        setUser(u);
+      }
       setLoading(false);
     });
   }, [id]);
@@ -58,87 +71,95 @@ function RoomDetailForm() {
   if (!room || room.message) return <div className="container p-12 text-center">Room not found</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <Link href="/room-booking" className="text-indigo-600 hover:underline mb-4 inline-block">← Back to Rooms</Link>
-
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-500 to-purple-700 p-8 text-white">
-            <div className="flex items-center gap-4">
-              <span className="text-6xl">{TYPE_ICONS[room.roomType] || '🛏️'}</span>
-              <div>
-                <h1 className="text-3xl font-bold">{room.name}</h1>
-                <p className="text-purple-100">Room {room.roomNumber} • Floor {room.floor}</p>
+    <div className={styles.page}>
+      <div className="container">
+        <Link href="/room-booking" className={styles.backBtn}>← Back to Rooms</Link>
+        <div className={styles.layout}>
+          {/* Form */}
+          <div>
+            <div className={styles.formHeader}>
+              <h1 className={styles.formTitle}>Book a Room</h1>
+              <div className={styles.hallBadge}>
+                <span>{TYPE_ICONS[room.roomType] || '🛏️'}</span>
+                <div>
+                  <div className={styles.hallBadgeName}>{room?.name}</div>
+                  <div className={styles.hallBadgeCap}>Occupancy: {room?.occupancy} guests • {room?.location}</div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="p-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h2 className="text-xl font-bold mb-4">Room Details</h2>
-                <div className="space-y-3 text-gray-600">
-                  <p>🛏️ <strong>Type:</strong> {room.roomType}</p>
-                  <p>👥 <strong>Occupancy:</strong> {room.occupancy} guests</p>
-                  <p>📍 <strong>Location:</strong> {room.location}</p>
-                  {room.amenities?.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {room.amenities.map(a => <span key={a} className="chip">{a}</span>)}
-                    </div>
-                  )}
-                </div>
-                <div className="mt-6 p-4 bg-purple-50 rounded-xl">
-                  <div className="text-3xl font-bold text-purple-600">₹{room.pricePerNight}</div>
-                  <div className="text-purple-700">per night</div>
-                </div>
-              </div>
+            {msg && <div className="alert alert-success">{msg}</div>}
+            {error && <div className="alert alert-error">{error}</div>}
 
-              <div>
-                <h2 className="text-xl font-bold mb-4">Book This Room</h2>
-                {msg && <div className="alert alert-success mb-4">{msg}</div>}
-                {error && <div className="alert alert-error mb-4">{error}</div>}
-
-                <form onSubmit={handleSubmit} className="space-y-4">
+            {user ? (
+              <form onSubmit={handleSubmit}>
+                <div className={styles.section}>
+                  <h2 className={styles.sectionTitle}>📅 Check-in Date & Time</h2>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Check-in *</label>
-                      <input type="date" className="form-input" required disabled
-                        style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
-                        min={new Date().toISOString().split('T')[0]}
-                        value={form.checkIn} onChange={e => setForm({...form, checkIn: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Check-out *</label>
-                      <input type="date" className="form-input" required disabled
-                        style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
-                        min={form.checkIn || new Date().toISOString().split('T')[0]}
-                        value={form.checkOut} onChange={e => setForm({...form, checkOut: e.target.value})} />
-                    </div>
+                    <input type="date" className="form-input" required
+                      min={new Date().toISOString().split('T')[0]}
+                      value={form.checkIn} onChange={e => setForm({...form, checkIn: e.target.value})} />
+                    <input type="time" className="form-input" required
+                      value={form.checkInTime} onChange={e => setForm({...form, checkInTime: e.target.value})} />
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Number of Guests *</label>
-                    <input type="number" className="form-input" min="1" max={room.occupancy}
-                      value={form.guests} onChange={e => setForm({...form, guests: parseInt(e.target.value)})} required />
+                <div className={styles.section}>
+                  <h2 className={styles.sectionTitle}>📅 Check-out Date & Time</h2>
+                  <div className="grid grid-cols-2 gap-4">
+                    <input type="date" className="form-input" required
+                      min={form.checkIn || new Date().toISOString().split('T')[0]}
+                      value={form.checkOut} onChange={e => setForm({...form, checkOut: e.target.value})} />
+                    <input type="time" className="form-input" required
+                      value={form.checkOutTime} onChange={e => setForm({...form, checkOutTime: e.target.value})} />
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Special Requests</label>
-                    <textarea className="form-input" rows={2} placeholder="Any special requirements..."
-                      value={form.specialRequests} onChange={e => setForm({...form, specialRequests: e.target.value})} />
-                  </div>
+                <div className={styles.section}>
+                  <h2 className={styles.sectionTitle}>👥 Expected Guests</h2>
+                  <input type="number" className="form-input" min="1" max={room?.occupancy} required
+                    value={form.guests} onChange={e => setForm({...form, guests: parseInt(e.target.value)})} style={{ maxWidth: 200 }} />
+                </div>
 
-                  <button type="submit" disabled={submitting} className="btn-primary w-full">
-                    {submitting ? 'Booking...' : '🏨 Book Room'}
-                  </button>
-                </form>
+                <div className={styles.section}>
+                  <h2 className={styles.sectionTitle}>📋 Special Requests</h2>
+                  <textarea className="form-input" rows={3} placeholder="Any special requirements..."
+                    value={form.specialRequests} onChange={e => setForm({...form, specialRequests: e.target.value})} style={{ resize: 'vertical' }} />
+                </div>
+
+                <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={submitting}>
+                  {submitting ? '⏳ Submitting...' : '🚀 Submit Booking Request'}
+                </button>
+              </form>
+            ) : (
+              <div className="bg-purple-50 border border-purple-100 rounded-xl p-6 text-center mt-8">
+                <p className="text-purple-800 mb-4 font-medium">You need to be logged in to book this room.</p>
+                <Link href="/login" className="btn-primary inline-flex">🔑 Login to Book</Link>
+              </div>
+            )}
+          </div>
+
+          {/* Summary sidebar */}
+          <div className={styles.summary}>
+            <div className={styles.summaryCard}>
+              <h3 className={styles.summaryTitle}>📋 Booking Summary</h3>
+              <div className={styles.summaryRows}>
+                <div className={styles.summaryRow}><span>Room</span><strong>{room?.name || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Type</span><strong>{room?.roomType || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Check-in Date</span><strong>{form.checkIn || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Check-in Time</span><strong>{form.checkInTime || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Check-out Date</span><strong>{form.checkOut || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Check-out Time</span><strong>{form.checkOutTime || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Guests</span><strong>{form.guests}</strong></div>
+              </div>
+              <div className={styles.summaryNote}>
+                ℹ️ Your request will be sent to admin for approval. You&apos;ll see the status in <strong>My Bookings</strong>.
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
-    </div>
-  );
+    </div>  );
 }
 
 export default function RoomDetailPage() {

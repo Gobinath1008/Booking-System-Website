@@ -5,10 +5,35 @@ import styles from './mybookings.module.css';
 import { toast } from 'react-hot-toast';
 
 const TABS = ['all', 'pending', 'approved', 'rejected', 'cancelled'];
-const STATUS_COLORS = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected', cancelled: 'badge-cancelled', completed: 'badge-completed' };
-const STATUS_ICONS = { pending: '⏳', approved: '✅', rejected: '❌', cancelled: '🚫', completed: '✔️' };
+const STATUS_COLORS = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected', cancelled: 'badge-cancelled', completed: 'badge-completed', live: 'badge-live', finished: 'badge-finished' };
+const STATUS_ICONS = { pending: '⏳', approved: '✅', rejected: '❌', cancelled: '🚫', completed: '✔️', live: '🟢', finished: '🏁' };
 const SERVICE_ICONS = { hall: '🏛️', vehicle: '🚗', room: '🏨' };
 const SERVICE_NAMES = { hall: 'Hall Booking', vehicle: 'Vehicle Rental', room: 'Room Booking' };
+
+const getRealTimeStatus = (booking) => {
+  if (booking.status !== 'approved') return booking.status;
+
+  const now = new Date();
+  
+  if (booking.serviceType === 'hall') {
+    const start = new Date(`${booking.hallDate}T${booking.hallStartTime}:00`);
+    const end = new Date(`${booking.hallDate}T${booking.hallEndTime}:00`);
+    if (now >= start && now <= end) return 'live';
+    if (now > end) return 'finished';
+  } else if (booking.serviceType === 'vehicle') {
+    const start = new Date(`${booking.vehiclePickupDate}T${booking.vehiclePickupTime || '09:00'}:00`);
+    const end = new Date(`${booking.vehicleReturnDate}T${booking.vehicleReturnTime || '09:00'}:00`);
+    if (now >= start && now <= end) return 'live';
+    if (now > end) return 'finished';
+  } else if (booking.serviceType === 'room') {
+    const start = new Date(`${booking.roomCheckInDate}T${booking.roomCheckInTime || '14:00'}:00`);
+    const end = new Date(`${booking.roomCheckOutDate}T${booking.roomCheckOutTime || '12:00'}:00`);
+    if (now >= start && now <= end) return 'live';
+    if (now > end) return 'finished';
+  }
+  
+  return 'approved';
+};
 
 export default function MyBookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -36,7 +61,7 @@ export default function MyBookingsPage() {
     }
   }, []);
 
-  useEffect(() => { fetchBookings(); }, [fetchBookings]);
+  useEffect(() => { setTimeout(() => fetchBookings(), 0); }, [fetchBookings]);
 
   const handleCancel = async (id) => {
     setSelectedForCancel(id);
@@ -221,6 +246,7 @@ const formatTime12h = (timeStr) => {
           <div className={styles.bookingList}>
             {filtered.map((b, idx) => {
               const details = getBookingDetails(b);
+              const rtStatus = getRealTimeStatus(b);
               return (
                 <motion.div
                   key={b._id}
@@ -230,7 +256,7 @@ const formatTime12h = (timeStr) => {
                   transition={{ delay: idx * 0.05 }}
                 >
                   <div className={styles.bookingLeft}>
-                    <div className={styles.statusIcon}>{STATUS_ICONS[b.status]}</div>
+                    <div className={styles.statusIcon}>{STATUS_ICONS[rtStatus]}</div>
                     <div className={styles.bookingInfo}>
                       <div className={styles.bookingHall}>
                         {SERVICE_ICONS[b.serviceType]} {SERVICE_NAMES[b.serviceType]}
@@ -260,7 +286,7 @@ const formatTime12h = (timeStr) => {
                     </div>
                   </div>
                   <div className={styles.bookingRight}>
-                    <span className={`badge ${STATUS_COLORS[b.status]}`}>{b.status}</span>
+                    <span className={`badge ${STATUS_COLORS[rtStatus]}`}>{rtStatus === 'live' ? 'In Progress' : rtStatus.charAt(0).toUpperCase() + rtStatus.slice(1)}</span>
                     {['pending', 'approved'].includes(b.status) && (
                       <button className="btn-danger btn-sm" onClick={() => handleCancel(b._id)} disabled={cancelling === b._id}>
                         {cancelling === b._id ? '...' : '🗑️ Cancel'}
