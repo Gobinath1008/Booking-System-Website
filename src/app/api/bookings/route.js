@@ -59,9 +59,9 @@ export async function GET(request) {
     }
   } else {
     // fetching all bookings (e.g., checking availability)
-    // If not logged in OR is a regular user/customer, they can only see approved/pending bookings
+    // If not logged in OR is a regular user/customer, they can only see approved bookings (pending don't block availability)
     if (!user || (user.role !== 'super-admin' && user.role !== 'admin')) {
-      query.status = { $in: ['approved', 'pending'] };
+      query.status = 'approved';
     } else {
       // admin / super-admin can filter by status/userId
       if (status) query.status = status;
@@ -206,8 +206,8 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Pickup date cannot be in the past.' }, { status: 400 });
     }
     
-    if (returnDate <= pickupDate) {
-      return NextResponse.json({ message: 'Return date must be after pickup date.' }, { status: 400 });
+    if (returnDate < pickupDate) {
+      return NextResponse.json({ message: 'Return date must be after or equal to pickup date.' }, { status: 400 });
     }
   } else if (serviceType === 'room') {
     service = await GuestRoom.findById(serviceId);
@@ -225,8 +225,8 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Check-in date cannot be in the past.' }, { status: 400 });
     }
     
-    if (checkOutDate <= checkInDate) {
-      return NextResponse.json({ message: 'Check-out date must be after check-in date.' }, { status: 400 });
+    if (checkOutDate < checkInDate) {
+      return NextResponse.json({ message: 'Check-out date must be after or equal to check-in date.' }, { status: 400 });
     }
   }
 

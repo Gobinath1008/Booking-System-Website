@@ -2,13 +2,14 @@
 // Force recompile
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import styles from '@/app/(user)/book/[id]/booking.module.css';
 
 const TYPE_ICONS = { car: '🚗', van: '🚐', bus: '🚌', bike: '🏍️' };
 
 function VehicleDetailForm() {
+  const router = useRouter();
   const { id } = useParams();
   const searchParams = useSearchParams();
   const dateParam = searchParams.get('date') || '';
@@ -64,7 +65,7 @@ function VehicleDetailForm() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.message); return; }
-      setMsg('✅ Vehicle booked successfully!');
+      router.push('/my-bookings');
     } catch { setError('Something went wrong'); }
     finally { setSubmitting(false); }
   };
@@ -110,7 +111,7 @@ function VehicleDetailForm() {
                   <h2 className={styles.sectionTitle}>📅 Return Date & Time</h2>
                   <div className="grid grid-cols-2 gap-4">
                     <input type="date" className="form-input" required
-                      min={form.pickupDate || new Date().toISOString().split('T')[0]}
+                      min={new Date().toISOString().split('T')[0]}
                       value={form.returnDate} onChange={e => setForm({...form, returnDate: e.target.value})} />
                     <input type="time" className="form-input" required
                       value={form.returnTime} onChange={e => setForm({...form, returnTime: e.target.value})} />

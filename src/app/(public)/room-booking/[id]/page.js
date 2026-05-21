@@ -2,13 +2,14 @@
 // Force recompile
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import styles from '@/app/(user)/book/[id]/booking.module.css';
 
 const TYPE_ICONS = { economy: '🛏️', standard: '🛏️', deluxe: '✨', family: '👨‍👩‍👧‍👦', suite: '👑' };
 
 function RoomDetailForm() {
+  const router = useRouter();
   const { id } = useParams();
   const searchParams = useSearchParams();
   const dateParam = searchParams.get('date') || '';
@@ -62,7 +63,7 @@ function RoomDetailForm() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.message); return; }
-      setMsg('✅ Room booked successfully!');
+      router.push('/my-bookings');
     } catch { setError('Something went wrong'); }
     finally { setSubmitting(false); }
   };
@@ -108,7 +109,7 @@ function RoomDetailForm() {
                   <h2 className={styles.sectionTitle}>📅 Check-out Date & Time</h2>
                   <div className="grid grid-cols-2 gap-4">
                     <input type="date" className="form-input" required
-                      min={form.checkIn || new Date().toISOString().split('T')[0]}
+                      min={new Date().toISOString().split('T')[0]}
                       value={form.checkOut} onChange={e => setForm({...form, checkOut: e.target.value})} />
                     <input type="time" className="form-input" required
                       value={form.checkOutTime} onChange={e => setForm({...form, checkOutTime: e.target.value})} />
