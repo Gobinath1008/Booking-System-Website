@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import styles from './mybookings.module.css';
 import { toast } from 'react-hot-toast';
+import { openBookingPrintWindow } from '../../../lib/bookingPrint';
 
 const TABS = ['all', 'pending', 'approved', 'rejected', 'cancelled'];
 const STATUS_COLORS = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected', cancelled: 'badge-cancelled', completed: 'badge-completed', live: 'badge-live', finished: 'badge-finished' };
@@ -156,70 +157,11 @@ const formatDateTime = (value) => {
     cancelled: bookings.filter(b => b.status === 'cancelled').length
   };
 
-  const handlePrint = () => {
-    const printWindow = window.open('', '', 'height=600,width=800');
-    const content = `
-      <html>
-      <head>
-        <title>Knowledge Institute of Technology, Salem</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-          th { background-color: #1e3a8a; color: white; font-weight: bold; }
-          tr:nth-child(even) { background-color: #f9f9f9; }
-          .status { font-weight: bold; padding: 4px 8px; border-radius: 4px; }
-          .pending { background: rgba(243,156,18,0.2); color: #F39C12; }
-          .approved { background: rgba(46,204,113,0.2); color: #2ECC71; }
-          .rejected { background: rgba(231,76,60,0.2); color: #E74C3C; }
-          .cancelled { background: rgba(149,152,154,0.2); color: #6C757D; }
-        </style>
-      </head>
-      <body>
-        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; margin-bottom: 20px;">
-          <div style="display: flex; align-items: center; gap: 15px;">
-            <img src="/logo.png" alt="KIOT Logo" style="height: 60px; width: auto;" />
-            <div>
-              <div style="font-size: 20px; font-weight: bold; color: #1e3a8a; font-family: Arial, sans-serif;">KNOWLEDGE INSTITUTE OF TECHNOLOGY</div>
-              <div style="font-size: 14px; color: #475569; font-family: Arial, sans-serif; letter-spacing: 1px;">SALEM</div>
-            </div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-size: 18px; font-weight: bold; color: #334155; font-family: Arial, sans-serif;">Booking Report</div>
-            <div style="font-size: 11px; color: #64748b; font-family: Arial, sans-serif; margin-top: 4px;">Generated: ${new Date().toLocaleString()}</div>
-          </div>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Date</th>
-              <th>Details</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${filtered.map(b => `
-              <tr>
-                <td>${SERVICE_NAMES[b.serviceType]}</td>
-                <td>${getBookingDetails(b).date}</td>
-                <td><strong>${getBookingDetails(b).location}</strong><br/><small>⏰ ${getBookingDetails(b).time}</small><br/><small>${getBookingDetails(b).description}</small><br/><small>By: ${b.guestName || b.user?.name || 'Unknown'}</small></td>
-                <td>
-                  <span class="status ${b.status}">${b.status.toUpperCase()}</span>
-                  ${b.actionBy?.name && b.status !== 'pending' ? `<br/><small style="color: #666; font-size: 11px;">${b.status === 'approved' ? 'Approved by:' : b.status === 'rejected' ? 'Rejected by:' : 'Cancelled by:'} ${b.actionBy.name}${b.actionAt ? ' — ' + formatDateTime(b.actionAt) : ''}</small>` : ''}
-                  ${!b.actionBy?.name && b.status === 'cancelled' && b.cancelledAt ? `<br/><small style="color: #666; font-size: 11px;">Cancelled at: ${formatDateTime(b.cancelledAt)}</small>` : ''}
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        <p style="margin-top: 20px; font-weight: bold;">Total Bookings: ${filtered.length}</p>
-      </body>
-      </html>
-    `;
-    printWindow.document.write(content);
-    printWindow.document.close();
-    setTimeout(() => { printWindow.print(); }, 250);
+  const handlePrint = async () => {
+    await openBookingPrintWindow(filtered, {
+      title: 'Booking Report',
+      subtitle: 'My Bookings'
+    });
   };
 
   return (

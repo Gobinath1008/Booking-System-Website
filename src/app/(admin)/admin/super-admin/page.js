@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
+import { CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
 import { toast } from 'react-hot-toast';
+import { openBookingPrintWindow } from '../../../../lib/bookingPrint';
 
 const formatTime12h = (timeStr) => {
   if (!timeStr) return '';
@@ -16,7 +17,6 @@ const formatTime12h = (timeStr) => {
 };
 
 export default function SuperAdminDashboard() {
-  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [admins, setAdmins] = useState([]);
   const [users, setUsers] = useState([]);
@@ -39,23 +39,20 @@ export default function SuperAdminDashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [analyticsRes, adminsRes, usersRes, bookingsRes] = await Promise.all([
-        fetch('/api/analytics'),
+      const [adminsRes, usersRes, bookingsRes] = await Promise.all([
         fetch('/api/admins'),
         fetch(`/api/users?search=${debouncedSearch}&status=all&role=all&blocked=all`),
         fetch('/api/bookings?all=true')
       ]);
 
-      const analyticsData = await analyticsRes.json();
       const adminData = await adminsRes.json();
       const userData = await usersRes.json();
       const bookingsData = await bookingsRes.json();
 
-      setStats(analyticsData);
       setAdmins(Array.isArray(adminData) ? adminData : []);
       setUsers(Array.isArray(userData.users) ? userData.users : []);
       setBookings(Array.isArray(bookingsData) ? bookingsData : []);
-    } catch (error) {
+    } catch {
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
@@ -63,7 +60,11 @@ export default function SuperAdminDashboard() {
   }, [debouncedSearch]);
 
   useEffect(() => {
-    fetchData();
+    const timeoutId = setTimeout(() => {
+      void fetchData();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [fetchData]);
 
   const handleCreateAdmin = async (e) => {
@@ -147,6 +148,13 @@ export default function SuperAdminDashboard() {
   };
 
   const bookingStats = getBookingStats();
+
+  const handlePrint = async () => {
+    await openBookingPrintWindow(bookings, {
+      title: 'Booking Report',
+      subtitle: 'Super Admin Booking Logs'
+    });
+  };
 
   if (loading) {
     return (
@@ -426,8 +434,16 @@ export default function SuperAdminDashboard() {
         {activeTab === 'bookings' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-              <div className="p-5 border-b border-slate-200">
-                <h3 className="text-base font-semibold text-slate-900">Recent Booking Logs</h3>
+              <div className="p-5 border-b border-slate-200 flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-base font-semibold text-slate-900">Recent Booking Logs</h3>
+                </div>
+                <button
+                  onClick={handlePrint}
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-lg transition-colors"
+                >
+                  🖨️ Print Report
+                </button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">

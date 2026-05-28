@@ -1,7 +1,8 @@
 'use client';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import styles from './bookings.module.css';
+import { openBookingPrintWindow } from '../../../../lib/bookingPrint';
 
 const TABS = ['all', 'pending', 'approved', 'rejected', 'cancelled'];
 const STATUS_COLORS = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected', cancelled: 'badge-cancelled', live: 'badge-live', finished: 'badge-finished' };
@@ -63,14 +64,21 @@ function ManageBookingsContent() {
   const [pendingAction, setPendingAction] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
 
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     setLoading(true);
     const res = await fetch('/api/bookings');
     const data = await res.json();
     setBookings(Array.isArray(data) ? data : []);
     setLoading(false);
-  };
-  useEffect(() => { fetchBookings(); }, []);
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      void fetchBookings();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [fetchBookings]);
 
   const openReview = (b) => { setSelected(b); setAdminNote(b.adminNote || ''); setModal(true); };
   const closeModal = () => { setModal(false); setSelected(null); setConfirmModal(false); setPendingAction(null); };
@@ -112,77 +120,11 @@ function ManageBookingsContent() {
     } finally { setUpdating(false); }
   };
 
-  const handlePrint = () => {
-    const printWindow = window.open('', '', 'height=600,width=800');
-    const content = `
-      <html>
-      <head>
-        <title>Knowledge Institute of Technology, Salem</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-          th { background-color: #1e3a8a; color: white; font-weight: bold; }
-          tr:nth-child(even) { background-color: #f9f9f9; }
-          .status { font-weight: bold; padding: 4px 8px; border-radius: 4px; }
-          .pending { background: rgba(243,156,18,0.2); color: #F39C12; }
-          .approved { background: rgba(46,204,113,0.2); color: #2ECC71; }
-          .rejected { background: rgba(231,76,60,0.2); color: #E74C3C; }
-          .cancelled { background: rgba(149,152,154,0.2); color: #6C757D; }
-        </style>
-      </head>
-      <body>
-        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; margin-bottom: 20px;">
-          <div style="display: flex; align-items: center; gap: 15px;">
-            <img src="/logo.png" alt="KIOT Logo" style="height: 60px; width: auto;" />
-            <div>
-              <div style="font-size: 20px; font-weight: bold; color: #1e3a8a; font-family: Arial, sans-serif;">KNOWLEDGE INSTITUTE OF TECHNOLOGY</div>
-              <div style="font-size: 14px; color: #475569; font-family: Arial, sans-serif; letter-spacing: 1px;">SALEM</div>
-            </div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-size: 18px; font-weight: bold; color: #334155; font-family: Arial, sans-serif;">Booking Report</div>
-            <div style="font-size: 11px; color: #64748b; font-family: Arial, sans-serif; margin-top: 4px;">Generated: ${new Date().toLocaleString()}</div>
-          </div>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Hall</th>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Purpose</th>
-              <th>Attendees</th>
-              <th>Status</th>
-              <th>Admin Note</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${filtered.map(b => `
-              <tr>
-                <td>${b.user?.name || 'N/A'}</td>
-                <td>${b.hall?.name || 'N/A'}</td>
-                <td>${b.date || b.hallDate || b.vehiclePickupDate || b.roomCheckInDate || 'N/A'}</td>
-                <td>${formatTime12h(b.startTime || b.hallStartTime || b.vehiclePickupTime || '09:00')} - ${formatTime12h(b.endTime || b.hallEndTime || b.vehicleReturnTime || '09:00')}</td>
-                <td>${b.purpose}</td>
-                <td>${b.attendees}</td>
-                <td>
-                  <span class="status ${b.status}">${b.status.toUpperCase()}</span>
-                  ${b.actionBy?.name && b.status !== 'pending' ? `<br/><small style="color: #666; font-size: 11px;">${b.status === 'approved' ? 'Approved by:' : b.status === 'rejected' ? 'Rejected by:' : 'Cancelled by:'} ${b.actionBy.name}${b.actionAt ? ' — ' + new Date(b.actionAt).toLocaleString() : ''}</small>` : ''}
-                </td>
-                <td>${b.adminNote || '-'}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        <p style="margin-top: 20px; font-weight: bold;">Total Bookings: ${filtered.length}</p>
-      </body>
-      </html>
-    `;
-    printWindow.document.write(content);
-    printWindow.document.close();
-    setTimeout(() => { printWindow.print(); }, 250);
+  const handlePrint = async () => {
+    await openBookingPrintWindow(filtered, {
+      title: 'Booking Report',
+      subtitle: 'Manage Bookings'
+    });
   };
 
   const filtered = activeTab === 'all' ? bookings : bookings.filter(b => b.status === activeTab);
