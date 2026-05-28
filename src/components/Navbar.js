@@ -101,14 +101,12 @@ export default function Navbar({ user }) {
           {user ? (
             <>
               <div className={styles.userInfo}>
-                <div className={styles.avatar}>
-                  {isSuperAdmin ? '👑' : user.name?.[0]?.toUpperCase() || 'U'}
-                </div>
                 <div className={styles.userText}>
                   <span className={styles.userName}>{user.name}</span>
                   {getRoleBadge()}
                 </div>
               </div>
+              <Link href="/profile" className={styles.profileBtn}>👤 Profile</Link>
               <button onClick={handleLogout} className={styles.logoutBtn}>
                 <span>🚪</span> Logout
               </button>
@@ -135,7 +133,12 @@ export default function Navbar({ user }) {
             </Link>
           ))}
           {user ? (
-            <button onClick={handleLogout} className={styles.mobileLogout}>🚪 Logout</button>
+            <>
+              <Link href="/profile" className={styles.mobileProfile} onClick={() => setMenuOpen(false)}>
+                👤 Profile
+              </Link>
+              <button onClick={handleLogout} className={styles.mobileLogout}>🚪 Logout</button>
+            </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 16px' }}>
               <Link href="/login" className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setMenuOpen(false)}>Login</Link>
