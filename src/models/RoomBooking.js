@@ -11,11 +11,10 @@ const RoomBookingSchema = new mongoose.Schema({
   roomCheckOutTime: { type: String, default: '12:00' },
   numberOfGuests: Number,
   numberOfRooms: { type: Number, default: 1 },
+  roomPurpose: String,
   specialRequests: String,
 
   status: { type: String, enum: ['pending', 'approved', 'rejected', 'cancelled', 'completed'], default: 'pending' },
-  paymentStatus: { type: String, enum: ['pending', 'completed', 'failed', 'refunded'], default: 'pending' },
-  totalAmount: { type: Number, required: true },
   guestName: String,
   guestEmail: String,
   guestPhone: String,
@@ -27,9 +26,7 @@ const RoomBookingSchema = new mongoose.Schema({
   cancellationReason: String,
   cancelledAt: Date,
 
-  paymentId: String,
-  paymentMethod: { type: String, default: 'razorpay' },
-  invoice: String,
+  // payment fields removed
 
   department: String,
 }, { timestamps: true });

@@ -26,6 +26,42 @@ function RoomDetailForm() {
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
 
+  // Get today's date and current time
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const currentTimeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+  // Calculate minimum check-in time for today
+  const getMinCheckInTime = (selectedDate) => {
+    if (selectedDate === today) {
+      // For today, set minimum time to current time (rounded up to next 30 minutes)
+      const minutes = now.getMinutes();
+      const hour = now.getHours();
+      let minTime;
+      if (minutes === 0) {
+        minTime = `${String(hour).padStart(2, '0')}:00`;
+      } else if (minutes <= 30) {
+        minTime = `${String(hour).padStart(2, '0')}:30`;
+      } else {
+        minTime = `${String(hour + 1).padStart(2, '0')}:00`;
+      }
+      return minTime;
+    }
+    return '00:00';
+  };
+
+  const getMinCheckOutTime = (checkInDate, checkInTime) => {
+    if (checkInDate === today && checkInTime) {
+      const [h, m] = checkInTime.split(':').map(Number);
+      // Check-out must be at least 1 hour after check-in (and not in the past)
+      const checkOutDateTime = new Date();
+      checkOutDateTime.setHours(h, m, 0, 0);
+      checkOutDateTime.setHours(checkOutDateTime.getHours() + 1);
+      return String(checkOutDateTime.getHours()).padStart(2, '0') + ':' + String(checkOutDateTime.getMinutes()).padStart(2, '0');
+    }
+    return checkInTime ? checkInTime : '12:00';
+  };
+
   useEffect(() => {
     Promise.all([
       fetch(`/api/rooms?id=${id}`).then(r => r.json()),
@@ -58,7 +94,7 @@ function RoomDetailForm() {
           roomCheckOutTime: form.checkOutTime,
           numberOfGuests: form.guests,
           specialRequests: form.specialRequests,
-          totalAmount: room?.pricePerNight || 500,
+          
         }),
       });
       const data = await res.json();
@@ -98,9 +134,10 @@ function RoomDetailForm() {
                   <h2 className={styles.sectionTitle}>📅 Check-in Date & Time</h2>
                   <div className="grid grid-cols-2 gap-4">
                     <input type="date" className="form-input" required
-                      min={new Date().toISOString().split('T')[0]}
+                      min={today}
                       value={form.checkIn} onChange={e => setForm({...form, checkIn: e.target.value})} />
                     <input type="time" className="form-input" required
+                      min={getMinCheckInTime(form.checkIn)}
                       value={form.checkInTime} onChange={e => setForm({...form, checkInTime: e.target.value})} />
                   </div>
                 </div>
@@ -109,9 +146,10 @@ function RoomDetailForm() {
                   <h2 className={styles.sectionTitle}>📅 Check-out Date & Time</h2>
                   <div className="grid grid-cols-2 gap-4">
                     <input type="date" className="form-input" required
-                      min={new Date().toISOString().split('T')[0]}
+                      min={form.checkIn}
                       value={form.checkOut} onChange={e => setForm({...form, checkOut: e.target.value})} />
                     <input type="time" className="form-input" required
+                      min={form.checkOut === today ? currentTimeStr : '00:00'}
                       value={form.checkOutTime} onChange={e => setForm({...form, checkOutTime: e.target.value})} />
                   </div>
                 </div>

@@ -43,6 +43,11 @@ const formatTime12h = (timeStr) => {
   return `${String(hour12).padStart(2, '0')}:${minStr} ${ampm}`;
 };
 
+const formatDateTime = (dt) => {
+  if (!dt) return '';
+  try { return new Date(dt).toLocaleString(); } catch (e) { return String(dt); }
+};
+
 function ManageBookingsContent() {
   const searchParams = useSearchParams();
   const initialFilter = searchParams.get('status') || 'all';
@@ -164,7 +169,7 @@ function ManageBookingsContent() {
                 <td>${b.attendees}</td>
                 <td>
                   <span class="status ${b.status}">${b.status.toUpperCase()}</span>
-                  ${b.actionBy?.name && b.status !== 'pending' ? `<br/><small style="color: #666; font-size: 11px;">${b.status === 'approved' ? 'Approved by:' : b.status === 'rejected' ? 'Rejected by:' : 'Cancelled by:'} ${b.actionBy.name}</small>` : ''}
+                  ${b.actionBy?.name && b.status !== 'pending' ? `<br/><small style="color: #666; font-size: 11px;">${b.status === 'approved' ? 'Approved by:' : b.status === 'rejected' ? 'Rejected by:' : 'Cancelled by:'} ${b.actionBy.name}${b.actionAt ? ' — ' + new Date(b.actionAt).toLocaleString() : ''}</small>` : ''}
                 </td>
                 <td>${b.adminNote || '-'}</td>
               </tr>
@@ -242,14 +247,26 @@ function ManageBookingsContent() {
                      '🏛️ Hall: ' + (b.hall?.name || 'Event Hall')}
                   </div>
                   <div className={styles.bookingMeta}>
-                    📅 {b.date || b.hallDate || b.vehiclePickupDate || b.roomCheckInDate} 
-                    &nbsp;•&nbsp; 🕐 {formatTime12h(b.startTime || b.hallStartTime || b.vehiclePickupTime) || 'N/A'} – {formatTime12h(b.endTime || b.hallEndTime || b.vehicleReturnTime) || 'N/A'}
+                    {b.serviceType === 'room' ? (
+                      <>
+                        📅 Check-in: {b.roomCheckInDate} at {formatTime12h(b.roomCheckInTime || '14:00')}<br />
+                        📅 Check-out: {b.roomCheckOutDate} at {formatTime12h(b.roomCheckOutTime || '12:00')}
+                      </>
+                    ) : (
+                      <>
+                        📅 {b.date || b.hallDate || b.vehiclePickupDate || b.roomCheckInDate} 
+                        &nbsp;•&nbsp; 🕐 {formatTime12h(b.startTime || b.hallStartTime || b.vehiclePickupTime || b.roomCheckInTime) || 'N/A'} – {formatTime12h(b.endTime || b.hallEndTime || b.vehicleReturnTime || b.roomCheckOutTime) || 'N/A'}
+                      </>
+                    )}
                   </div>
                   <div className={styles.purpose}>📋 {b.purpose || b.vehicleDetails?.description || b.roomPurpose || 'No purpose provided'}</div>
                   {b.actionBy && b.status !== 'pending' && (
                     <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-secondary)' }}>
                       {b.status === 'approved' ? '✅ Approved by: ' : b.status === 'rejected' ? '❌ Rejected by: ' : '🗑️ Cancelled by: '} 
                       <strong>{b.actionBy?.name || 'Admin'}</strong>
+                      {b.actionAt && (
+                        <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--text-muted)' }}> — {formatDateTime(b.actionAt)}</span>
+                      )}
                     </div>
                   )}
                   {b.cancellationReason && (
@@ -278,15 +295,26 @@ function ManageBookingsContent() {
               <div className={styles.summaryRow}><span>User</span><strong>{selected.user?.name} ({selected.user?.role})</strong></div>
               <div className={styles.summaryRow}><span>Service</span><strong>{selected.serviceType === 'vehicle' ? '🚗 Vehicle' : selected.serviceType === 'room' ? '🏨 Room' : '🏛️ Hall'}</strong></div>
               <div className={styles.summaryRow}><span>Target</span><strong>{selected.hall?.name || selected.vehicleDetails?.vehicleId?.name || selected.roomDetails?.roomId?.name || 'N/A'}</strong></div>
-              <div className={styles.summaryRow}><span>Date</span><strong>{selected.date || selected.hallDate || selected.vehiclePickupDate || selected.roomCheckInDate}</strong></div>
-              <div className={styles.summaryRow}><span>Time</span><strong>{formatTime12h(selected.startTime || selected.hallStartTime || selected.vehiclePickupTime) || 'N/A'} – {formatTime12h(selected.endTime || selected.hallEndTime || selected.vehicleReturnTime) || 'N/A'}</strong></div>
-              <div className={styles.summaryRow}><span>Purpose</span><strong>{selected.purpose || selected.vehicleDetails?.description || selected.roomPurpose}</strong></div>
+              {selected.serviceType === 'room' ? (
+                <>
+                  <div className={styles.summaryRow}><span>Check-in Date</span><strong>{selected.roomCheckInDate}</strong></div>
+                  <div className={styles.summaryRow}><span>Check-in Time</span><strong>{formatTime12h(selected.roomCheckInTime || '14:00')}</strong></div>
+                  <div className={styles.summaryRow}><span>Check-out Date</span><strong>{selected.roomCheckOutDate}</strong></div>
+                  <div className={styles.summaryRow}><span>Check-out Time</span><strong>{formatTime12h(selected.roomCheckOutTime || '12:00')}</strong></div>
+                </>
+              ) : (
+                <>
+                  <div className={styles.summaryRow}><span>Date</span><strong>{selected.date || selected.hallDate || selected.vehiclePickupDate}</strong></div>
+                  <div className={styles.summaryRow}><span>Time</span><strong>{formatTime12h(selected.startTime || selected.hallStartTime || selected.vehiclePickupTime) || 'N/A'} – {formatTime12h(selected.endTime || selected.hallEndTime || selected.vehicleReturnTime) || 'N/A'}</strong></div>
+                </>
+              )}
+              <div className={styles.summaryRow}><span>Purpose</span><strong>{selected.purpose || selected.vehicleDetails?.description || selected.roomPurpose || 'No purpose'}</strong></div>
               <div className={styles.summaryRow}><span>Guests</span><strong>{selected.attendees || selected.vehicleDetails?.passengers || selected.roomDetails?.numberOfGuests || 'N/A'}</strong></div>
               {selected.actionBy && selected.status !== 'pending' && (
-                <div className={styles.summaryRow}><span>Reviewed By</span><strong>{selected.actionBy?.name || 'Admin'}</strong></div>
+                <div className={styles.summaryRow}><span>Reviewed By</span><strong>{selected.actionBy?.name || 'Admin'}{selected.actionAt ? ' — ' + formatDateTime(selected.actionAt) : ''}</strong></div>
               )}
               {selected.cancellationReason && (
-                <div className={styles.summaryRow}><span>Cancelled</span><strong>{selected.cancelledBy === 'admin' ? 'Admin' : 'User'}: {selected.cancellationReason}</strong></div>
+                <div className={styles.summaryRow}><span>Cancelled</span><strong>{selected.cancelledBy === 'admin' ? 'Admin' : 'User'}: {selected.cancellationReason}{selected.cancelledAt ? ' — ' + formatDateTime(selected.cancelledAt) : ''}</strong></div>
               )}
             </div>
 

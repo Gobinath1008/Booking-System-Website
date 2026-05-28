@@ -11,13 +11,12 @@ const VehicleBookingSchema = new mongoose.Schema({
   vehicleReturnTime: String,
   pickupLocation: String,
   returnLocation: String,
+  purpose: String,
   withDriver: { type: Boolean, default: false },
   fuelOption: { type: String, enum: ['empty', 'full'], default: 'empty' },
   mileage: Number,
 
   status: { type: String, enum: ['pending', 'approved', 'rejected', 'cancelled', 'completed'], default: 'pending' },
-  paymentStatus: { type: String, enum: ['pending', 'completed', 'failed', 'refunded'], default: 'pending' },
-  totalAmount: { type: Number, required: true },
   guestName: String,
   guestEmail: String,
   guestPhone: String,
@@ -29,9 +28,7 @@ const VehicleBookingSchema = new mongoose.Schema({
   cancellationReason: String,
   cancelledAt: Date,
 
-  paymentId: String,
-  paymentMethod: { type: String, default: 'razorpay' },
-  invoice: String,
+  // payment fields removed
 
   department: String,
 }, { timestamps: true });

@@ -32,9 +32,6 @@ export async function GET(request) {
     hallCounts,
     vehicleCounts,
     roomCounts,
-    hallRev,
-    vehicleRev,
-    roomRev,
     hallCount,
     vehicleCount,
     roomCount,
@@ -45,18 +42,6 @@ export async function GET(request) {
     HallBooking.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
     VehicleBooking.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
     RoomBooking.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
-    HallBooking.aggregate([
-      { $match: { status: 'approved' } },
-      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
-    ]),
-    VehicleBooking.aggregate([
-      { $match: { status: 'approved' } },
-      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
-    ]),
-    RoomBooking.aggregate([
-      { $match: { status: 'approved' } },
-      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
-    ]),
     Hall.countDocuments({ isActive: true }),
     Vehicle.countDocuments({ isActive: true }),
     GuestRoom.countDocuments({ isActive: true }),
@@ -79,13 +64,11 @@ export async function GET(request) {
   addStatusCounts(roomCounts);
 
   const totalBookings = Object.values(statusMap).reduce((a, b) => a + b, 0);
-  const totalRevenue = (hallRev[0]?.total || 0) + (vehicleRev[0]?.total || 0) + (roomRev[0]?.total || 0);
-
-  // Revenue by service type
+  const totalRevenue = 0;
   const revenueByService = {
-    hall: { total: hallRev[0]?.total || 0, count: hallCounts.find(c => c._id === 'approved')?.count || 0 },
-    vehicle: { total: vehicleRev[0]?.total || 0, count: vehicleCounts.find(c => c._id === 'approved')?.count || 0 },
-    room: { total: roomRev[0]?.total || 0, count: roomCounts.find(c => c._id === 'approved')?.count || 0 }
+    hall: { total: 0, count: hallCounts.find(c => c._id === 'approved')?.count || 0 },
+    vehicle: { total: 0, count: vehicleCounts.find(c => c._id === 'approved')?.count || 0 },
+    room: { total: 0, count: roomCounts.find(c => c._id === 'approved')?.count || 0 }
   };
 
   // Bookings by service type (in dateFilter)
@@ -100,19 +83,19 @@ export async function GET(request) {
     room: roomCountFiltered
   };
 
-  // Monthly revenue (last 12 months)
+  // Monthly counts (last 12 months)
   const [hallMonthly, vehicleMonthly, roomMonthly] = await Promise.all([
     HallBooking.aggregate([
       { $match: { status: 'approved' } },
-      { $group: { _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } }, total: { $sum: '$totalAmount' }, count: { $sum: 1 } } }
+      { $group: { _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } }, count: { $sum: 1 } } }
     ]),
     VehicleBooking.aggregate([
       { $match: { status: 'approved' } },
-      { $group: { _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } }, total: { $sum: '$totalAmount' }, count: { $sum: 1 } } }
+      { $group: { _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } }, count: { $sum: 1 } } }
     ]),
     RoomBooking.aggregate([
       { $match: { status: 'approved' } },
-      { $group: { _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } }, total: { $sum: '$totalAmount' }, count: { $sum: 1 } } }
+      { $group: { _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } }, count: { $sum: 1 } } }
     ])
   ]);
 
@@ -124,7 +107,6 @@ export async function GET(request) {
         if (!monthlyMap[key]) {
           monthlyMap[key] = { year: item._id.year, month: item._id.month, total: 0, count: 0 };
         }
-        monthlyMap[key].total += item.total;
         monthlyMap[key].count += item.count;
       }
     });
@@ -171,15 +153,15 @@ export async function GET(request) {
   const [hallDaily, vehicleDaily, roomDaily] = await Promise.all([
     HallBooking.aggregate([
       { $match: { createdAt: { $gte: daysAgo } } },
-      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 }, revenue: { $sum: '$totalAmount' } } }
+      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } }
     ]),
     VehicleBooking.aggregate([
       { $match: { createdAt: { $gte: daysAgo } } },
-      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 }, revenue: { $sum: '$totalAmount' } } }
+      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } }
     ]),
     RoomBooking.aggregate([
       { $match: { createdAt: { $gte: daysAgo } } },
-      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 }, revenue: { $sum: '$totalAmount' } } }
+      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } }
     ])
   ]);
 
@@ -188,10 +170,9 @@ export async function GET(request) {
     list.forEach(item => {
       if (item._id) {
         if (!dailyMap[item._id]) {
-          dailyMap[item._id] = { _id: item._id, count: 0, revenue: 0 };
+          dailyMap[item._id] = { _id: item._id, count: 0 };
         }
         dailyMap[item._id].count += item.count;
-        dailyMap[item._id].revenue += item.revenue;
       }
     });
   };
@@ -200,28 +181,7 @@ export async function GET(request) {
   addDaily(roomDaily);
   const dailyBookings = Object.values(dailyMap).sort((a, b) => a._id.localeCompare(b._id));
 
-  // Payment status breakdown
-  const [hallPay, vehiclePay, roomPay] = await Promise.all([
-    HallBooking.aggregate([{ $group: { _id: '$paymentStatus', count: { $sum: 1 }, amount: { $sum: '$totalAmount' } } }]),
-    VehicleBooking.aggregate([{ $group: { _id: '$paymentStatus', count: { $sum: 1 }, amount: { $sum: '$totalAmount' } } }]),
-    RoomBooking.aggregate([{ $group: { _id: '$paymentStatus', count: { $sum: 1 }, amount: { $sum: '$totalAmount' } } }])
-  ]);
-
-  const payMap = {};
-  const addPay = (list) => {
-    list.forEach(item => {
-      if (item._id) {
-        if (!payMap[item._id]) {
-          payMap[item._id] = { count: 0, amount: 0 };
-        }
-        payMap[item._id].count += item.count;
-        payMap[item._id].amount += item.amount;
-      }
-    });
-  };
-  addPay(hallPay);
-  addPay(vehiclePay);
-  addPay(roomPay);
+  // Payment fields removed - no breakdown available
 
   return NextResponse.json({
     overview: {
@@ -244,7 +204,6 @@ export async function GET(request) {
     monthlyRevenue,
     dailyBookings,
     recentBookings,
-    paymentStatus: payMap,
     statusBreakdown: statusMap,
     topServices: {
       halls: hallBookings,

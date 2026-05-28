@@ -34,8 +34,6 @@ const BookingSchema = new mongoose.Schema({
 
   // Common fields
   status: { type: String, enum: ['pending', 'approved', 'rejected', 'cancelled', 'completed'], default: 'pending' },
-  paymentStatus: { type: String, enum: ['pending', 'completed', 'failed', 'refunded'], default: 'pending' },
-  totalAmount: { type: Number, required: true },
   guestName: String,
   guestEmail: String,
   guestPhone: String,
@@ -48,10 +46,7 @@ const BookingSchema = new mongoose.Schema({
   cancellationReason: String,
   cancelledAt: Date,
 
-  // Payment fields
-  paymentId: String,
-  paymentMethod: { type: String, default: 'razorpay' },
-  invoice: String,
+  // Payment fields removed per config: no payment stored on bookings
 
   // Smart Calendar fields
   department: String,

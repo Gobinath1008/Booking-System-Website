@@ -39,6 +39,29 @@ function BookForm() {
   const [submitError, setSubmitError] = useState('');
 
   const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const currentHour = String(now.getHours()).padStart(2, '0');
+
+  // Get minimum available time slot for today
+  const getMinTimeSlot = () => {
+    if (form.date !== today) return null;
+    // Find the first time slot that is >= current time
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    return TIME_SLOTS.find(t => {
+      const [h, m] = t.split(':').map(Number);
+      const slotMinutes = h * 60 + m;
+      return slotMinutes > currentMinutes; // Must be strictly greater (future time)
+    });
+  };
+
+  // Check if a time slot is in the past
+  const isTimeSlotInPast = (timeSlot) => {
+    if (form.date !== today) return false;
+    const [h, m] = timeSlot.split(':').map(Number);
+    const slotMinutes = h * 60 + m;
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    return slotMinutes <= currentMinutes;
+  };
 
   const [existingBookings, setExistingBookings] = useState([]);
 
@@ -79,7 +102,12 @@ function BookForm() {
     if (existingBookings.some(b => t > b.hallStartTime && t <= b.hallEndTime)) return true;
 
     // Check if selecting this end time would overlap with an existing booking that starts after our selected start time
-    return existingBookings.some(b => b.hallStartTime >= form.startTime && t > b.hallStartTime);
+    if (existingBookings.some(b => b.hallStartTime >= form.startTime && t > b.hallStartTime)) return true;
+
+    // Check if end time is in the past
+    if (form.date === today && isTimeSlotInPast(t)) return true;
+
+    return false;
   };
 
   const validate = () => {
@@ -98,7 +126,7 @@ function BookForm() {
     if (!validate()) return;
     setLoading(true); setSubmitError('');
     try {
-      const res = await fetch('/api/bookings', {
+        const res = await fetch('/api/bookings', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           serviceType: 'hall',
@@ -108,7 +136,6 @@ function BookForm() {
           hallEndTime: form.endTime,
           purpose: form.purpose,
           attendees: parseInt(form.attendees) || 1,
-          totalAmount: (hall?.pricePerHour || 500) * duration,
         }),
       });
       const data = await res.json();
@@ -150,7 +177,7 @@ function BookForm() {
               <div className={styles.section}>
                 <h2 className={styles.sectionTitle}>📅 Date</h2>
                 <input id="booking-date" type="date" className={`form-input ${errors.date ? 'error' : ''}`}
-                  min={today} value={form.date} disabled />
+                  min={today} value={form.date} onChange={e => handleDateChange(e.target.value)} />
                 {errors.date && <div className="error-msg">{errors.date}</div>}
               </div>
 
@@ -160,11 +187,14 @@ function BookForm() {
                 <div className={styles.timeSlots}>
                   {TIME_SLOTS.slice(0, -1).map(t => {
                     const booked = isStartTimeBooked(t);
+                    const isPast = isTimeSlotInPast(t);
                     return (
                       <button key={t} type="button"
-                        className={`${styles.timeSlot} ${form.startTime === t ? styles.slotActive : ''} ${booked ? styles.slotDisabled : ''}`}
-                        onClick={() => !booked && set('startTime', t)}
-                        disabled={booked}>{formatTime12h(t)}</button>
+                        className={`${styles.timeSlot} ${form.startTime === t ? styles.slotActive : ''} ${booked || isPast ? styles.slotDisabled : ''}`}
+                        onClick={() => !booked && !isPast && set('startTime', t)}
+                        disabled={booked || isPast}
+                        title={isPast ? 'This time has passed' : booked ? 'Already booked' : ''}
+                      >{formatTime12h(t)}</button>
                     );
                   })}
                 </div>

@@ -122,9 +122,8 @@ export async function POST(request) {
     serviceType,
     serviceId,
     hallDate, hallStartTime, hallEndTime, purpose, attendees,
-    vehiclePickupDate, vehicleReturnDate, vehiclePickupTime, vehicleReturnTime, withDriver, fuelOption,
-    roomCheckInDate, roomCheckOutDate, roomCheckInTime, roomCheckOutTime, numberOfGuests,
-    totalAmount,
+    vehiclePickupDate, vehicleReturnDate, vehiclePickupTime, vehicleReturnTime, pickupLocation, returnLocation, withDriver, fuelOption,
+    roomCheckInDate, roomCheckOutDate, roomCheckInTime, roomCheckOutTime, numberOfGuests, specialRequests,
     guestName, guestEmail, guestPhone
   } = body;
 
@@ -143,47 +142,20 @@ export async function POST(request) {
     return NextResponse.json({ message: 'You do not have guest room booking access. Contact admin for permissions.' }, { status: 403 });
   }
 
-  // Check booking limit across all three collections
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
-
-  const [hallCounts, vehicleCounts, roomCounts] = await Promise.all([
-    HallBooking.countDocuments({
-      user: user.id,
-      createdAt: { $gte: startOfMonth },
-      status: { $nin: ['cancelled', 'rejected'] }
-    }),
-    VehicleBooking.countDocuments({
-      user: user.id,
-      createdAt: { $gte: startOfMonth },
-      status: { $nin: ['cancelled', 'rejected'] }
-    }),
-    RoomBooking.countDocuments({
-      user: user.id,
-      createdAt: { $gte: startOfMonth },
-      status: { $nin: ['cancelled', 'rejected'] }
-    })
-  ]);
-  const monthlyBookings = hallCounts + vehicleCounts + roomCounts;
-
-  const bookingLimit = currentUser.permissions?.bookingLimit || 10;
-  if (monthlyBookings >= bookingLimit) {
-    return NextResponse.json({ message: `You have reached your monthly booking limit (${bookingLimit}). Contact admin for more bookings.` }, { status: 403 });
-  }
-
   // Validate service ID exists
   let service;
+  const currentDateTime = new Date();
+  
   if (serviceType === 'hall') {
     service = await Hall.findById(serviceId);
     if (!hallDate || !hallStartTime || !hallEndTime || !purpose) {
       return NextResponse.json({ message: 'Hall booking requires date, times, and purpose' }, { status: 400 });
     }
     
-    // Validate date is not in the past
-    const bookingDate = new Date(hallDate);
-    if (bookingDate < new Date()) {
-      return NextResponse.json({ message: 'Cannot book for past dates.' }, { status: 400 });
+    // Validate that booking is not after current system time
+    const bookingDateTime = new Date(`${hallDate}T${hallStartTime}:00`);
+    if (bookingDateTime <= currentDateTime) {
+      return NextResponse.json({ message: 'Cannot book for past dates or times. Please select a future date and time.' }, { status: 400 });
     }
 
     // Validate start time is before end time
@@ -196,18 +168,17 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Vehicle booking requires pickup and return dates' }, { status: 400 });
     }
     
-    // Validate dates
-    const pickupDate = new Date(vehiclePickupDate);
-    const returnDate = new Date(vehicleReturnDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Validate dates and times - pickup cannot be in the past
+    const pickupTime = vehiclePickupTime || '00:00';
+    const pickupDateTime = new Date(`${vehiclePickupDate}T${pickupTime}:00`);
     
-    if (pickupDate < today) {
-      return NextResponse.json({ message: 'Pickup date cannot be in the past.' }, { status: 400 });
+    if (pickupDateTime <= currentDateTime) {
+      return NextResponse.json({ message: 'Pickup date and time cannot be in the past. Please select a future date and time.' }, { status: 400 });
     }
     
-    if (returnDate < pickupDate) {
-      return NextResponse.json({ message: 'Return date must be after or equal to pickup date.' }, { status: 400 });
+    const returnDateTime = new Date(`${vehicleReturnDate}T${vehicleReturnTime || '23:59'}:00`);
+    if (returnDateTime <= pickupDateTime) {
+      return NextResponse.json({ message: 'Return date and time must be after pickup date and time.' }, { status: 400 });
     }
   } else if (serviceType === 'room') {
     service = await GuestRoom.findById(serviceId);
@@ -215,18 +186,17 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Room booking requires check-in and check-out dates' }, { status: 400 });
     }
     
-    // Validate dates
-    const checkInDate = new Date(roomCheckInDate);
-    const checkOutDate = new Date(roomCheckOutDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Validate check-in cannot be in the past
+    const checkInTime = roomCheckInTime || '14:00';
+    const checkInDateTime = new Date(`${roomCheckInDate}T${checkInTime}:00`);
     
-    if (checkInDate < today) {
-      return NextResponse.json({ message: 'Check-in date cannot be in the past.' }, { status: 400 });
+    if (checkInDateTime <= currentDateTime) {
+      return NextResponse.json({ message: 'Check-in date and time cannot be in the past. Please select a future date and time.' }, { status: 400 });
     }
     
-    if (checkOutDate < checkInDate) {
-      return NextResponse.json({ message: 'Check-out date must be after or equal to check-in date.' }, { status: 400 });
+    const checkOutDateTime = new Date(`${roomCheckOutDate}T${roomCheckOutTime || '12:00'}:00`);
+    if (checkOutDateTime <= checkInDateTime) {
+      return NextResponse.json({ message: 'Check-out date and time must be after check-in date and time.' }, { status: 400 });
     }
   }
 
@@ -303,7 +273,6 @@ export async function POST(request) {
       hallEndTime,
       purpose,
       attendees,
-      totalAmount: totalAmount || 0,
       guestName: guestName || currentUser.name,
       guestEmail: guestEmail || currentUser.email,
       guestPhone: guestPhone || currentUser.phone,
@@ -317,9 +286,11 @@ export async function POST(request) {
       vehicleReturnDate,
       vehiclePickupTime,
       vehicleReturnTime,
+      pickupLocation: pickupLocation || undefined,
+      returnLocation: returnLocation || undefined,
+      purpose,
       withDriver,
       fuelOption,
-      totalAmount: totalAmount || 0,
       guestName: guestName || currentUser.name,
       guestEmail: guestEmail || currentUser.email,
       guestPhone: guestPhone || currentUser.phone,
@@ -334,7 +305,9 @@ export async function POST(request) {
       roomCheckInTime,
       roomCheckOutTime,
       numberOfGuests,
-      totalAmount: totalAmount || 0,
+      specialRequests,
+      // accept `purpose` from clients too; fall back to `specialRequests`
+      roomPurpose: purpose || specialRequests,
       guestName: guestName || currentUser.name,
       guestEmail: guestEmail || currentUser.email,
       guestPhone: guestPhone || currentUser.phone,

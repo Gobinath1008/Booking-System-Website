@@ -50,6 +50,18 @@ const formatTime12h = (timeStr) => {
 };
 
   const getDetails = (b) => {
+    if (b.serviceType === 'room') {
+      // For room bookings, show check-in and check-out clearly
+      const checkInDate = b.roomCheckInDate ? format(new Date(b.roomCheckInDate), 'MMM d, yyyy') : '—';
+      const checkOutDate = b.roomCheckOutDate ? format(new Date(b.roomCheckOutDate), 'MMM d, yyyy') : '—';
+      const checkInTime = formatTime12h(b.roomCheckInTime || '14:00');
+      const checkOutTime = formatTime12h(b.roomCheckOutTime || '12:00');
+      const date = `Check-in: ${checkInDate}`;
+      const time = `${checkInTime} → Check-out: ${checkOutTime}`;
+      const info = b.roomPurpose || b.specialRequests || '';
+      return { date, time, info };
+    }
+    
     const rawDate = b.hallDate || b.vehiclePickupDate || b.roomCheckInDate || '';
     const date = rawDate ? format(new Date(rawDate), 'MMM d, yyyy') : '—';
     const startTimeStr = b.hallStartTime || b.vehiclePickupTime || b.roomCheckInTime || '';

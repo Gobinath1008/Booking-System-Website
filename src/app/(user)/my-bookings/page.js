@@ -8,7 +8,7 @@ const TABS = ['all', 'pending', 'approved', 'rejected', 'cancelled'];
 const STATUS_COLORS = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected', cancelled: 'badge-cancelled', completed: 'badge-completed', live: 'badge-live', finished: 'badge-finished' };
 const STATUS_ICONS = { pending: '⏳', approved: '✅', rejected: '❌', cancelled: '🚫', completed: '✔️', live: '🟢', finished: '🏁' };
 const SERVICE_ICONS = { hall: '🏛️', vehicle: '🚗', room: '🏨' };
-const SERVICE_NAMES = { hall: 'Hall Booking', vehicle: 'Vehicle Rental', room: 'Room Booking' };
+const SERVICE_NAMES = { hall: 'Hall Booking', vehicle: 'Vehicle Booking', room: 'Room Booking' };
 
 const getRealTimeStatus = (booking) => {
   if (booking.status !== 'approved') return booking.status;
@@ -107,28 +107,40 @@ const formatTime12h = (timeStr) => {
   return `${String(hour12).padStart(2, '0')}:${minStr} ${ampm}`;
 };
 
+const formatDateTime = (value) => {
+  if (!value) return '';
+  try { return new Date(value).toLocaleString(); } catch (e) { return String(value); }
+};
+
   const getBookingDetails = (booking) => {
     switch (booking.serviceType) {
       case 'hall':
         return {
           date: booking.hallDate,
           time: `${formatTime12h(booking.hallStartTime)} - ${formatTime12h(booking.hallEndTime)}`,
-          location: booking.purpose,
+          location: booking.purpose || 'No purpose specified',
           description: `${booking.attendees} attendees`
         };
-      case 'vehicle':
+      case 'vehicle': {
+        const location = booking.purpose || 'No purpose specified';
+        const driverText = booking.withDriver ? 'With Driver' : 'Self-drive';
+        const routeInfo = booking.pickupLocation && booking.returnLocation
+          ? ` (${booking.pickupLocation} → ${booking.returnLocation})`
+          : '';
+
         return {
           date: `${booking.vehiclePickupDate} to ${booking.vehicleReturnDate}`,
           time: `${formatTime12h(booking.vehiclePickupTime || '09:00')} - ${formatTime12h(booking.vehicleReturnTime || '09:00')}`,
-          location: `${booking.pickupLocation || 'N/A'} → ${booking.returnLocation || 'N/A'}`,
-          description: `${booking.withDriver ? 'With Driver' : 'Self-drive'} • Fuel: ${booking.fuelOption}`
+          location,
+          description: `${driverText}${routeInfo}`
         };
+      }
       case 'room':
         return {
-          date: `${booking.roomCheckInDate} to ${booking.roomCheckOutDate}`,
-          time: `${formatTime12h(booking.roomCheckInTime || '14:00')} - ${formatTime12h(booking.roomCheckOutTime || '12:00')}`,
-          location: `${booking.numberOfGuests} guests`,
-          description: `${booking.numberOfRooms} room${booking.numberOfRooms > 1 ? 's' : ''}`
+          date: `Check-in: ${booking.roomCheckInDate} | Check-out: ${booking.roomCheckOutDate}`,
+          time: `${formatTime12h(booking.roomCheckInTime || '14:00')} to ${formatTime12h(booking.roomCheckOutTime || '12:00')}`,
+          location: booking.specialRequests || 'No special requests',
+          description: `${booking.numberOfGuests} guests • ${booking.numberOfRooms} room${booking.numberOfRooms > 1 ? 's' : ''}`
         };
       default:
         return { date: 'N/A', time: 'N/A', location: 'N/A', description: 'N/A' };
@@ -191,10 +203,11 @@ const formatTime12h = (timeStr) => {
               <tr>
                 <td>${SERVICE_NAMES[b.serviceType]}</td>
                 <td>${getBookingDetails(b).date}</td>
-                <td><strong>${getBookingDetails(b).location}</strong><br/><small>${getBookingDetails(b).description}</small><br/><small>By: ${b.guestName || b.user?.name || 'Unknown'}</small></td>
+                <td><strong>${getBookingDetails(b).location}</strong><br/><small>⏰ ${getBookingDetails(b).time}</small><br/><small>${getBookingDetails(b).description}</small><br/><small>By: ${b.guestName || b.user?.name || 'Unknown'}</small></td>
                 <td>
                   <span class="status ${b.status}">${b.status.toUpperCase()}</span>
-                  ${b.actionBy?.name && b.status !== 'pending' ? `<br/><small style="color: #666; font-size: 11px;">${b.status === 'approved' ? 'Approved by:' : b.status === 'rejected' ? 'Rejected by:' : 'Cancelled by:'} ${b.actionBy.name}</small>` : ''}
+                  ${b.actionBy?.name && b.status !== 'pending' ? `<br/><small style="color: #666; font-size: 11px;">${b.status === 'approved' ? 'Approved by:' : b.status === 'rejected' ? 'Rejected by:' : 'Cancelled by:'} ${b.actionBy.name}${b.actionAt ? ' — ' + formatDateTime(b.actionAt) : ''}</small>` : ''}
+                  ${!b.actionBy?.name && b.status === 'cancelled' && b.cancelledAt ? `<br/><small style="color: #666; font-size: 11px;">Cancelled at: ${formatDateTime(b.cancelledAt)}</small>` : ''}
                 </td>
               </tr>
             `).join('')}
@@ -278,9 +291,12 @@ const formatTime12h = (timeStr) => {
                       {b.adminNote && (
                         <div className={styles.adminNote}>💬 Admin: {b.adminNote}</div>
                       )}
+                      {b.actionBy && b.status !== 'pending' && (
+                        <div className={styles.adminNote}>⚙️ {b.status === 'approved' ? 'Approved' : b.status === 'rejected' ? 'Rejected' : 'Reviewed'} at {formatDateTime(b.actionAt)}</div>
+                      )}
                       {b.cancellationReason && (
                         <div className={styles.cancellationNote}>
-                          🚫 {b.cancelledBy === 'admin' ? 'Admin ' : 'User '}cancelled: {b.cancellationReason}
+                          🚫 {b.cancelledBy === 'admin' ? 'Admin ' : 'User '}cancelled: {b.cancellationReason}{b.cancelledAt ? ` — ${formatDateTime(b.cancelledAt)}` : ''}
                         </div>
                       )}
                     </div>

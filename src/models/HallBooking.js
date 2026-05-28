@@ -12,8 +12,6 @@ const HallBookingSchema = new mongoose.Schema({
   attendees: Number,
 
   status: { type: String, enum: ['pending', 'approved', 'rejected', 'cancelled', 'completed'], default: 'pending' },
-  paymentStatus: { type: String, enum: ['pending', 'completed', 'failed', 'refunded'], default: 'pending' },
-  totalAmount: { type: Number, required: true },
   guestName: String,
   guestEmail: String,
   guestPhone: String,
@@ -25,9 +23,7 @@ const HallBookingSchema = new mongoose.Schema({
   cancellationReason: String,
   cancelledAt: Date,
 
-  paymentId: String,
-  paymentMethod: { type: String, default: 'razorpay' },
-  invoice: String,
+  // payment fields removed
 
   department: String,
   timeSlotType: { type: String, enum: ['hourly', 'custom', 'full-day'], default: 'hourly' },

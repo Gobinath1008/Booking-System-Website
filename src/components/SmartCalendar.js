@@ -758,7 +758,7 @@ export default function SmartCalendar({
                       {selectedEvent.status}
                     </span>
                   </p>
-                  <p className="text-sm text-gray-600 mt-1">Booking Status: {selectedEvent.paymentStatus}</p>
+                  
                 </div>
 
                 {selectedEvent.serviceType === 'hall' && (
@@ -789,9 +789,10 @@ export default function SmartCalendar({
                       🏨 {selectedEvent.numberOfRooms} Room(s), {selectedEvent.numberOfGuests} Guest(s)
                     </p>
                     <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-600">
-                      <p>📥 {selectedEvent.roomCheckInDate}</p>
-                      <p>📤 {selectedEvent.roomCheckOutDate}</p>
+                      <p>📥 Check-in: {selectedEvent.roomCheckInDate} at {formatTime12h(selectedEvent.roomCheckInTime || '14:00')}</p>
+                      <p>📤 Check-out: {selectedEvent.roomCheckOutDate} at {formatTime12h(selectedEvent.roomCheckOutTime || '12:00')}</p>
                     </div>
+                    {selectedEvent.specialRequests && <p className="text-sm text-gray-700 mt-2">📝 {selectedEvent.specialRequests}</p>}
                   </div>
                 )}
               </div>

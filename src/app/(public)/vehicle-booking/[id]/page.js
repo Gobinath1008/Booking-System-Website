@@ -26,6 +26,41 @@ function VehicleDetailForm() {
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
 
+  // Get today's date and current time
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const currentTimeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+  // Calculate minimum pickup time for today
+  const getMinPickupTime = (selectedDate) => {
+    if (selectedDate === today) {
+      // For today, set minimum time to current time (rounded up to next hour)
+      const hour = now.getHours();
+      const minutes = now.getMinutes();
+      if (minutes > 0) {
+        return `${String(hour + 1).padStart(2, '0')}:00`;
+      }
+      return `${String(hour).padStart(2, '0')}:00`;
+    }
+    return '00:00';
+  };
+
+  // Calculate minimum return time
+  const getMinReturnTime = (returnDate, pickupDate, pickupTime) => {
+    if (returnDate < pickupDate) {
+      return pickupTime;
+    }
+    if (returnDate === pickupDate) {
+      // Return must be at least 1 hour after pickup
+      if (pickupTime) {
+        const [h, m] = pickupTime.split(':').map(Number);
+        const returnHour = h + 1;
+        return `${String(returnHour).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      }
+    }
+    return pickupTime ? pickupTime : '00:00';
+  };
+
   useEffect(() => {
     Promise.all([
       fetch(`/api/vehicles?id=${id}`).then(r => r.json()),
@@ -60,7 +95,6 @@ function VehicleDetailForm() {
           returnLocation: form.returnLocation,
           withDriver: form.withDriver,
           purpose: form.purpose,
-          totalAmount: vehicle?.dailyRentalPrice || 500,
         }),
       });
       const data = await res.json();
@@ -100,9 +134,10 @@ function VehicleDetailForm() {
                   <h2 className={styles.sectionTitle}>📅 Pickup Date & Time</h2>
                   <div className="grid grid-cols-2 gap-4">
                     <input type="date" className="form-input" required
-                      min={new Date().toISOString().split('T')[0]}
+                      min={today}
                       value={form.pickupDate} onChange={e => setForm({...form, pickupDate: e.target.value})} />
                     <input type="time" className="form-input" required
+                      min={getMinPickupTime(form.pickupDate)}
                       value={form.pickupTime} onChange={e => setForm({...form, pickupTime: e.target.value})} />
                   </div>
                 </div>
@@ -111,9 +146,10 @@ function VehicleDetailForm() {
                   <h2 className={styles.sectionTitle}>📅 Return Date & Time</h2>
                   <div className="grid grid-cols-2 gap-4">
                     <input type="date" className="form-input" required
-                      min={new Date().toISOString().split('T')[0]}
+                      min={form.pickupDate}
                       value={form.returnDate} onChange={e => setForm({...form, returnDate: e.target.value})} />
                     <input type="time" className="form-input" required
+                      min={getMinReturnTime(form.returnDate, form.pickupDate, form.pickupTime)}
                       value={form.returnTime} onChange={e => setForm({...form, returnTime: e.target.value})} />
                   </div>
                 </div>
