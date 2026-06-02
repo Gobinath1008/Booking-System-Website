@@ -146,7 +146,7 @@ export const buildBookingPrintHtml = (bookings, options = {}) => {
         td.details-cell div { margin-bottom: 6px; }
         th { background-color: #1e3a8a; color: white; font-weight: bold; }
         tr:nth-child(even) { background-color: #f9f9f9; }
-        .status { font-weight: bold; padding: 4px 8px; border-radius: 4px; }
+        .status { font-weight: bold; padding: 4px 8px; border-radius: 4px; display: block; margin-bottom: 8px; }
         .pending { background: rgba(243,156,18,0.2); color: #F39C12; }
         .approved { background: rgba(46,204,113,0.2); color: #2ECC71; }
         .rejected { background: rgba(231,76,60,0.2); color: #E74C3C; }
