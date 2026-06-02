@@ -139,18 +139,26 @@ export const buildBookingPrintHtml = (bookings, options = {}) => {
     <head>
       <title>Knowledge Institute of Technology, Salem</title>
       <style>
-        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        @page { size: auto; margin: 10mm; }
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; color: #1f2937; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; page-break-inside: auto; }
         th, td { border: 1px solid #ddd; padding: 12px; text-align: left; vertical-align: top; }
         td.details-cell { text-align: left; vertical-align: top; }
         td.details-cell div { margin-bottom: 6px; }
         th { background-color: #1e3a8a; color: white; font-weight: bold; }
+        tr { page-break-inside: avoid; }
+        tbody tr:nth-child(4n) { page-break-after: always; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         .status { font-weight: bold; padding: 4px 8px; border-radius: 4px; display: block; margin-bottom: 8px; }
         .pending { background: rgba(243,156,18,0.2); color: #F39C12; }
         .approved { background: rgba(46,204,113,0.2); color: #2ECC71; }
         .rejected { background: rgba(231,76,60,0.2); color: #E74C3C; }
         .cancelled { background: rgba(149,152,154,0.2); color: #6C757D; }
+        .report-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; margin-bottom: 20px; }
+        .report-title { font-size: 20px; font-weight: bold; color: #1e3a8a; }
+        .report-subtitle { font-size: 12px; color: #64748b; margin-top: 4px; }
+        .report-meta { font-size: 11px; color: #64748b; margin-top: 4px; }
+        img.logo { height: 60px; width: auto; }
       </style>
     </head>
     <body>
@@ -165,6 +173,7 @@ export const buildBookingPrintHtml = (bookings, options = {}) => {
         <div style="text-align: right;">
           <div style="font-size: 18px; font-weight: bold; color: #334155; font-family: Arial, sans-serif;">${escapeHtml(options.title || 'Booking Report')}</div>
           ${options.subtitle ? `<div style="font-size: 12px; color: #64748b; font-family: Arial, sans-serif; margin-top: 4px;">${escapeHtml(options.subtitle)}</div>` : ''}
+          <div style="font-size: 12px; color: #334155; font-family: Arial, sans-serif; margin-top: 4px; font-weight: 600;">Total Bookings: ${safeBookings.length}</div>
           <div style="font-size: 11px; color: #64748b; font-family: Arial, sans-serif; margin-top: 4px;">Generated: ${escapeHtml(generatedAt)}</div>
         </div>
       </div>
@@ -182,7 +191,6 @@ export const buildBookingPrintHtml = (bookings, options = {}) => {
           ${rows}
         </tbody>
       </table>
-      <p style="margin-top: 20px; font-weight: bold;">Total Bookings: ${safeBookings.length}</p>
     </body>
     </html>
   `;
