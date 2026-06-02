@@ -10,6 +10,7 @@ const STATUS_COLORS = { pending: 'badge-pending', approved: 'badge-approved', re
 const STATUS_ICONS = { pending: '⏳', approved: '✅', rejected: '❌', cancelled: '🚫', completed: '✔️', live: '🟢', finished: '🏁' };
 const SERVICE_ICONS = { hall: '🏛️', vehicle: '🚗', room: '🏨' };
 const SERVICE_NAMES = { hall: 'Hall Booking', vehicle: 'Vehicle Booking', room: 'Room Booking' };
+const SERVICE_FILTERS = ['all', 'hall', 'vehicle', 'room'];
 
 const getRealTimeStatus = (booking) => {
   if (booking.status !== 'approved') return booking.status;
@@ -40,6 +41,7 @@ export default function MyBookingsPage() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const [activeService, setActiveService] = useState('all');
   const [cancelling, setCancelling] = useState(null);
   const [confirmModal, setConfirmModal] = useState(false);
   const [selectedForCancel, setSelectedForCancel] = useState(null);
@@ -148,13 +150,22 @@ const formatDateTime = (value) => {
     }
   };
 
-  const filtered = activeTab === 'all' ? bookings : bookings.filter(b => b.status === activeTab);
+  const filtered = (activeTab === 'all' ? bookings : bookings.filter(b => b.status === activeTab))
+    .filter(b => activeService === 'all' || b.serviceType === activeService);
+
   const counts = {
     all: bookings.length,
     pending: bookings.filter(b => b.status === 'pending').length,
     approved: bookings.filter(b => b.status === 'approved').length,
     rejected: bookings.filter(b => b.status === 'rejected').length,
     cancelled: bookings.filter(b => b.status === 'cancelled').length
+  };
+
+  const serviceCounts = {
+    all: bookings.length,
+    hall: bookings.filter(b => b.serviceType === 'hall').length,
+    vehicle: bookings.filter(b => b.serviceType === 'vehicle').length,
+    room: bookings.filter(b => b.serviceType === 'room').length
   };
 
   const handlePrint = async () => {
@@ -187,14 +198,32 @@ const formatDateTime = (value) => {
           ))}
         </div>
 
+        <div className="tabs" style={{ marginTop: 18, marginBottom: 24 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginRight: 12, alignSelf: 'center' }}>
+            Filter by service:
+          </span>
+          {SERVICE_FILTERS.map(service => (
+            <button key={service} className={`tab-btn ${activeService === service ? 'active' : ''}`}
+              onClick={() => setActiveService(service)}
+              style={{ marginRight: 8 }}>
+              {service === 'all' ? 'All Services' : service === 'hall' ? 'Hall' : service === 'vehicle' ? 'Vehicle' : 'Room'}
+              {serviceCounts[service] > 0 && <span className={styles.tabCount}>{serviceCounts[service]}</span>}
+            </button>
+          ))}
+        </div>
+
         {loading ? (
           <div className="spinner-wrap"><div className="spinner" /></div>
         ) : filtered.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">📄</div>
-            <div className="empty-title">No {activeTab === 'all' ? '' : activeTab} bookings</div>
+            <div className="empty-title">
+              No {activeService === 'all' ? '' : activeService} {activeTab === 'all' ? '' : activeTab} bookings
+            </div>
             <div className="empty-sub">
-              {activeTab === 'all' ? "You haven't made any bookings yet." : `No ${activeTab} bookings found.`}
+              {(activeTab === 'all' && activeService === 'all')
+                ? "You haven't made any bookings yet."
+                : 'Try adjusting your filters or check other service types.'}
             </div>
           </div>
         ) : (
