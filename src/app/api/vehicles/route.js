@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import { connectDB } from '@/lib/db';
 import Vehicle from '@/models/Vehicle';
 import { requireAdmin } from '@/lib/middleware';
@@ -16,6 +17,9 @@ export async function GET(request) {
 
   // If id provided, return single vehicle
   if (id) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ message: 'Invalid vehicle id' }, { status: 400 });
+    }
     const vehicle = await Vehicle.findById(id);
     if (!vehicle) return NextResponse.json({ message: 'Vehicle not found' }, { status: 404 });
     return NextResponse.json(vehicle);

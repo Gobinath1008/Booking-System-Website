@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import { connectDB } from '@/lib/db';
 import GuestRoom from '@/models/GuestRoom';
 import { requireAdmin } from '@/lib/middleware';
@@ -17,6 +18,9 @@ export async function GET(request) {
 
   // If id provided, return single room
   if (id) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ message: 'Invalid room id' }, { status: 400 });
+    }
     const room = await GuestRoom.findById(id);
     if (!room) return NextResponse.json({ message: 'Room not found' }, { status: 404 });
     return NextResponse.json(room);

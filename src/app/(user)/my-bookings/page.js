@@ -140,7 +140,7 @@ const formatDateTime = (value) => {
         return {
           date: `Check-in: ${booking.roomCheckInDate} | Check-out: ${booking.roomCheckOutDate}`,
           time: `${formatTime12h(booking.roomCheckInTime || '14:00')} to ${formatTime12h(booking.roomCheckOutTime || '12:00')}`,
-          location: booking.specialRequests || 'No special requests',
+          location: booking.roomPurpose || booking.specialRequests || 'No purpose specified',
           description: `${booking.numberOfGuests} guests • ${booking.numberOfRooms} room${booking.numberOfRooms > 1 ? 's' : ''}`
         };
       default:

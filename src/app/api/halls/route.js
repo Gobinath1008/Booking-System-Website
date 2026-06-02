@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import { connectDB } from '@/lib/db';
 import Hall from '@/models/Hall';
 import { requireAuth, requireAdmin } from '@/lib/middleware';
@@ -13,6 +14,9 @@ export async function GET(request) {
 
   // If id provided, return single hall
   if (id) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ message: 'Invalid hall id' }, { status: 400 });
+    }
     const hall = await Hall.findById(id);
     if (!hall) return NextResponse.json({ message: 'Hall not found' }, { status: 404 });
     return NextResponse.json(hall);

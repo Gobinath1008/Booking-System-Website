@@ -18,22 +18,35 @@ const formatDateTime = (value) => {
   }
 };
 
+const normalizeServiceId = (serviceId) => {
+  if (!serviceId) return null;
+  if (serviceId === '[object Object]') return null;
+  if (typeof serviceId === 'object') {
+    return String(serviceId._id || serviceId.id || '');
+  }
+  return String(serviceId);
+};
+
 const getServiceDetails = async (booking) => {
-  if (!booking?.serviceId) return {};
+  const serviceId = normalizeServiceId(booking.serviceId);
+  if (!serviceId) return {};
 
   try {
     if (booking.serviceType === 'hall') {
-      const res = await fetch(`/api/halls?id=${booking.serviceId}`);
+      if (typeof booking.serviceId === 'object' && booking.serviceId._id) return { hall: booking.serviceId };
+      const res = await fetch(`/api/halls?id=${serviceId}`);
       if (res.ok) return { hall: await res.json() };
     }
 
     if (booking.serviceType === 'vehicle') {
-      const res = await fetch(`/api/vehicles?id=${booking.serviceId}`);
+      if (typeof booking.serviceId === 'object' && booking.serviceId._id) return { vehicle: booking.serviceId };
+      const res = await fetch(`/api/vehicles?id=${serviceId}`);
       if (res.ok) return { vehicle: await res.json() };
     }
 
     if (booking.serviceType === 'room') {
-      const res = await fetch(`/api/rooms?id=${booking.serviceId}`);
+      if (typeof booking.serviceId === 'object' && booking.serviceId._id) return { room: booking.serviceId };
+      const res = await fetch(`/api/rooms?id=${serviceId}`);
       if (res.ok) return { room: await res.json() };
     }
   } catch {
@@ -44,39 +57,40 @@ const getServiceDetails = async (booking) => {
 };
 
 const getBookingDetails = (booking, serviceDetails = {}) => {
-  const hall = serviceDetails.hall;
-  const vehicle = serviceDetails.vehicle;
-  const room = serviceDetails.room;
+  const hall = booking.serviceId || serviceDetails.hall;
+  const vehicle = booking.serviceId || serviceDetails.vehicle;
+  const room = booking.serviceId || serviceDetails.room;
 
   switch (booking.serviceType) {
     case 'hall':
       return {
         date: booking.hallDate,
         time: `${formatTime12h(booking.hallStartTime)} - ${formatTime12h(booking.hallEndTime)}`,
-        location: hall?.name || 'Hall Booking',
-        description: `${booking.attendees || 0} attendees${booking.purpose ? ` • ${booking.purpose}` : ''}`,
+        location: `🏛️ ${escapeHtml(hall?.name || 'Hall')}`,
+        description: `<div><strong>${escapeHtml(booking.hallDate)} | ${formatTime12h(booking.hallStartTime)} to ${formatTime12h(booking.hallEndTime)}</strong></div><div>${escapeHtml(booking.attendees || 0)} attendees</div>${booking.purpose ? `<div><strong>Purpose:</strong> ${escapeHtml(booking.purpose)}</div>` : ''}`,
       };
     case 'vehicle': {
       const driverText = booking.withDriver ? 'With Driver' : 'Self-drive';
       const routeInfo = booking.pickupLocation && booking.returnLocation
-        ? ` (${booking.pickupLocation} → ${booking.returnLocation})`
+        ? ` (${escapeHtml(booking.pickupLocation)} → ${escapeHtml(booking.returnLocation)})`
         : '';
 
       return {
-        date: `${booking.vehiclePickupDate} to ${booking.vehicleReturnDate}`,
+        date: `${escapeHtml(booking.vehiclePickupDate)} to ${escapeHtml(booking.vehicleReturnDate)}`,
         time: `${formatTime12h(booking.vehiclePickupTime || '09:00')} - ${formatTime12h(booking.vehicleReturnTime || '09:00')}`,
-        location: vehicle?.name || 'Vehicle Booking',
-        description: `${vehicle?.registrationNumber ? `Reg No: ${vehicle.registrationNumber}` : 'Vehicle booking'} • ${driverText}${routeInfo}${booking.purpose ? ` • ${booking.purpose}` : ''}`,
+        location: `🚗 ${escapeHtml(vehicle?.name || 'Vehicle')} (${escapeHtml(vehicle?.registrationNumber || 'N/A')})`,
+        description: `<div><strong>Pickup:</strong> ${escapeHtml(booking.vehiclePickupDate)} at ${formatTime12h(booking.vehiclePickupTime || '09:00')}</div><div><strong>Return:</strong> ${escapeHtml(booking.vehicleReturnDate)} at ${formatTime12h(booking.vehicleReturnTime || '09:00')}</div><div>${escapeHtml(driverText)}${routeInfo}</div>${booking.purpose ? `<div><strong>Purpose:</strong> ${escapeHtml(booking.purpose)}</div>` : ''}`,
       };
     }
-    case 'room':
+    case 'room': {
+      const roomPurpose = booking.roomPurpose || booking.specialRequests;
       return {
-        date: `Check-in: ${booking.roomCheckInDate} | Check-out: ${booking.roomCheckOutDate}`,
+        date: `Check-in: ${escapeHtml(booking.roomCheckInDate)} | Check-out: ${escapeHtml(booking.roomCheckOutDate)}`,
         time: `${formatTime12h(booking.roomCheckInTime || '14:00')} to ${formatTime12h(booking.roomCheckOutTime || '12:00')}`,
-        location: room?.name || 'Guest Room',
-        description: `${room?.roomNumber ? `Room No: ${room.roomNumber}` : 'Room booking'}${room?.floor !== undefined && room?.floor !== null ? ` • Floor: ${room.floor}` : ''}${booking.numberOfGuests ? ` • ${booking.numberOfGuests} guests` : ''}${booking.numberOfRooms ? ` • ${booking.numberOfRooms} room${booking.numberOfRooms > 1 ? 's' : ''}` : ''}${booking.specialRequests ? ` • ${booking.specialRequests}` : ''}`,
+        location: `🏨 ${escapeHtml(room?.name || 'Room')} #${escapeHtml(room?.roomNumber || 'N/A')}${room?.floor !== undefined && room?.floor !== null ? ` (Floor ${escapeHtml(String(room.floor))})` : ''}`,
+        description: `<div><strong>Check-in:</strong> ${escapeHtml(booking.roomCheckInDate)} at ${formatTime12h(booking.roomCheckInTime || '14:00')}</div><div><strong>Check-out:</strong> ${escapeHtml(booking.roomCheckOutDate)} at ${formatTime12h(booking.roomCheckOutTime || '12:00')}</div><div>${escapeHtml(booking.numberOfGuests ? `${booking.numberOfGuests} guests` : 'N/A guests')}${booking.numberOfRooms ? ` • ${escapeHtml(String(booking.numberOfRooms))} room${booking.numberOfRooms > 1 ? 's' : ''}` : ''}</div>${roomPurpose ? `<div><strong>Purpose:</strong> ${escapeHtml(roomPurpose)}</div>` : ''}`,
       };
-    default:
+    }    default:
       return { date: 'N/A', time: 'N/A', location: 'N/A', description: 'N/A' };
   }
 };
@@ -92,16 +106,14 @@ export const buildBookingPrintHtml = (bookings, options = {}) => {
     const statusLabel = status.toUpperCase();
 
     const detailLines = [
-      `<strong>${escapeHtml(details.location)}</strong>`,
-      `<small>⏰ ${escapeHtml(details.time)}</small>`,
-      `<small>${escapeHtml(details.description)}</small>`,
-      `<small>By: ${escapeHtml(booking.guestName || booking.user?.name || 'Unknown')}</small>`,
+      `<div>${details.location}</div>`,
+      `<div>${details.description}</div>`,
+      `<div>By: ${escapeHtml(booking.guestName || booking.user?.name || 'Unknown')}</div>`,
     ];
 
     const actionInfo = booking.actionBy?.name && status !== 'pending'
       ? `${status === 'approved' ? 'Approved by:' : status === 'rejected' ? 'Rejected by:' : 'Cancelled by:'} ${booking.actionBy.name}${booking.actionAt ? ' — ' + formatDateTime(booking.actionAt) : ''}`
       : '';
-
     const cancelledInfo = !booking.actionBy?.name && status === 'cancelled' && booking.cancelledAt
       ? `Cancelled at: ${formatDateTime(booking.cancelledAt)}`
       : '';
@@ -113,7 +125,7 @@ export const buildBookingPrintHtml = (bookings, options = {}) => {
         <td>${index + 1}</td>
         <td>${escapeHtml(booking.serviceType === 'hall' ? 'Hall Booking' : booking.serviceType === 'vehicle' ? 'Vehicle Booking' : 'Room Booking')}</td>
         <td>${escapeHtml(details.date)}</td>
-        <td>${detailLines.join('<br/>')}</td>
+        <td class="details-cell">${detailLines.filter(Boolean).join('')}</td>
         <td>
           <span class="status ${escapeHtml(status)}">${escapeHtml(statusLabel)}</span>
           ${statusInfo ? `<br/><small style="color: #666; font-size: 11px;">${statusInfo}</small>` : ''}
@@ -130,6 +142,8 @@ export const buildBookingPrintHtml = (bookings, options = {}) => {
         body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 12px; text-align: left; vertical-align: top; }
+        td.details-cell { text-align: left; vertical-align: top; }
+        td.details-cell div { margin-bottom: 6px; }
         th { background-color: #1e3a8a; color: white; font-weight: bold; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         .status { font-weight: bold; padding: 4px 8px; border-radius: 4px; }

@@ -80,13 +80,13 @@ export async function GET(request) {
   ];
 
   if (!serviceType || serviceType === 'hall') {
-    halls = await HallBooking.find(query).populate(populateOpts).sort({ createdAt: -1 });
+    halls = await HallBooking.find(query).populate([...populateOpts, { path: 'serviceId', select: 'name' }]).sort({ createdAt: -1 });
   }
   if (!serviceType || serviceType === 'vehicle') {
-    vehicles = await VehicleBooking.find(query).populate(populateOpts).sort({ createdAt: -1 });
+    vehicles = await VehicleBooking.find(query).populate([...populateOpts, { path: 'serviceId', select: 'name registrationNumber capacity' }]).sort({ createdAt: -1 });
   }
   if (!serviceType || serviceType === 'room') {
-    rooms = await RoomBooking.find(query).populate(populateOpts).sort({ createdAt: -1 });
+    rooms = await RoomBooking.find(query).select('+specialRequests').populate([...populateOpts, { path: 'serviceId', select: 'name roomNumber' }]).sort({ createdAt: -1 });
   }
 
   const combined = [...halls, ...vehicles, ...rooms].sort((a, b) => b.createdAt - a.createdAt);
