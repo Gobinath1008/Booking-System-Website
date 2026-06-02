@@ -123,7 +123,7 @@ export async function POST(request) {
     serviceId,
     hallDate, hallStartTime, hallEndTime, purpose, attendees,
     vehiclePickupDate, vehicleReturnDate, vehiclePickupTime, vehicleReturnTime, pickupLocation, returnLocation, withDriver, fuelOption,
-    roomCheckInDate, roomCheckOutDate, roomCheckInTime, roomCheckOutTime, numberOfGuests, specialRequests,
+    roomCheckInDate, roomCheckOutDate, roomCheckInTime, roomCheckOutTime, numberOfGuests, specialRequests, roomPurpose,
     guestName, guestEmail, guestPhone
   } = body;
 
@@ -305,9 +305,7 @@ export async function POST(request) {
       roomCheckInTime,
       roomCheckOutTime,
       numberOfGuests,
-      specialRequests,
-      // accept `purpose` from clients too; fall back to `specialRequests`
-      roomPurpose: purpose || specialRequests,
+      roomPurpose: roomPurpose || purpose,
       guestName: guestName || currentUser.name,
       guestEmail: guestEmail || currentUser.email,
       guestPhone: guestPhone || currentUser.phone,

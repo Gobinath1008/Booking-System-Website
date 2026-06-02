@@ -20,7 +20,7 @@ function RoomDetailForm() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     checkIn: dateParam, checkOut: dateParam, checkInTime: '14:00', checkOutTime: '12:00',
-    guests: 1, specialRequests: ''
+    guests: 1, purpose: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
@@ -93,8 +93,7 @@ function RoomDetailForm() {
           roomCheckInTime: form.checkInTime,
           roomCheckOutTime: form.checkOutTime,
           numberOfGuests: form.guests,
-          specialRequests: form.specialRequests,
-          
+          roomPurpose: form.purpose
         }),
       });
       const data = await res.json();
@@ -161,9 +160,9 @@ function RoomDetailForm() {
                 </div>
 
                 <div className={styles.section}>
-                  <h2 className={styles.sectionTitle}>📋 Special Requests</h2>
-                  <textarea className="form-input" rows={3} placeholder="Any special requirements..."
-                    value={form.specialRequests} onChange={e => setForm({...form, specialRequests: e.target.value})} style={{ resize: 'vertical' }} />
+                  <h2 className={styles.sectionTitle}>📋 Purpose</h2>
+                  <textarea className="form-input" rows={3} placeholder="What is the purpose of your booking?"
+                    value={form.purpose} onChange={e => setForm({...form, purpose: e.target.value})} style={{ resize: 'vertical' }} />
                 </div>
 
                 <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={submitting}>
