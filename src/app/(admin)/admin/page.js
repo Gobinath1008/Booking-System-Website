@@ -24,13 +24,14 @@ export default function AdminDashboard() {
         setCurrentUser(user);
 
         const b = Array.isArray(bookings) ? bookings : [];
+        const pendingBookings = b.filter(x => x.status === 'pending');
         setStats({
           halls: Array.isArray(halls) ? halls.length : 0,
           totalBookings: b.length,
-          pendingBookings: b.filter(x => x.status === 'pending').length,
+          pendingBookings: pendingBookings.length,
           approvedBookings: b.filter(x => x.status === 'approved').length,
         });
-        setRecent(b.slice(0, 6));
+        setRecent(pendingBookings.slice(0, 6));
       } catch (err) {
         console.error(err);
       } finally {
@@ -78,10 +79,16 @@ const formatTime12h = (timeStr) => {
     { icon: '✅', label: 'Approved',          value: stats.approvedBookings,color: '#2ecc71', glow: 'rgba(46,204,113,0.2)' },
   ];
 
+  const isSuperAdmin = currentUser?.role === 'super-admin';
+
   let QUICK_TOOLS = [
     { href: '/admin/bookings?type=hall', icon: '📋', label: 'Manage Bookings', sub: 'Review & approve requests', color: '#7c6fff' },
-    { href: '/admin/calendar',           icon: '📅', label: 'Calendar View',   sub: 'Visual booking overview',  color: '#4cc9f0' },
   ];
+
+  if (isSuperAdmin) {
+    QUICK_TOOLS.unshift({ href: '/admin/super-admin', icon: '👑', label: 'Super Admin Workspace', sub: 'Manage admins, users, and system-wide settings', color: '#8b5cf6' });
+  }
+
   if (currentUser?.role === 'super-admin' || currentUser?.assignedServices?.includes('halls') || currentUser?.permissions?.hallAccess !== false) {
     QUICK_TOOLS.push({ href: '/admin/halls', icon: '🏢', label: 'Halls Inventory', sub: 'Add or edit hall details', color: '#2ecc71' });
   }
@@ -123,20 +130,38 @@ const formatTime12h = (timeStr) => {
               <p style={{ fontSize: 11, color: '#4b5563', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Hall Management</p>
             </div>
           </div>
-          <Link href="/admin/bookings?status=pending">
-            <motion.button
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px',
-                background: 'linear-gradient(135deg, #5b4fe8, #4338ca)',
-                color: '#fff', fontSize: 13, fontWeight: 700,
-                borderRadius: 10, boxShadow: '0 4px 16px rgba(91,79,232,0.25)',
-                border: 'none', cursor: 'pointer',
-              }}
-            >
-              ⏳ Review Pending ({stats.pendingBookings})
-            </motion.button>
-          </Link>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+            {isSuperAdmin && (
+              <Link href="/admin/super-admin">
+                <motion.button
+                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px',
+                    background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                    color: '#fff', fontSize: 13, fontWeight: 700,
+                    borderRadius: 10, boxShadow: '0 4px 16px rgba(139,92,246,0.25)',
+                    border: 'none', cursor: 'pointer',
+                  }}
+                >
+                  👑 Super Admin Workspace
+                </motion.button>
+              </Link>
+            )}
+            <Link href="/admin/bookings?status=pending">
+              <motion.button
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px',
+                  background: 'linear-gradient(135deg, #5b4fe8, #4338ca)',
+                  color: '#fff', fontSize: 13, fontWeight: 700,
+                  borderRadius: 10, boxShadow: '0 4px 16px rgba(91,79,232,0.25)',
+                  border: 'none', cursor: 'pointer',
+                }}
+              >
+                ⏳ Review Pending ({stats.pendingBookings})
+              </motion.button>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -203,7 +228,7 @@ const formatTime12h = (timeStr) => {
         {/* Recent Bookings */}
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e' }}>Recent Booking Requests</h3>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e' }}>Pending Booking Requests</h3>
             <Link href="/admin/bookings">
               <span style={{
                 fontSize: 13, color: '#5b4fe8', fontWeight: 700, padding: '7px 16px',
@@ -223,8 +248,8 @@ const formatTime12h = (timeStr) => {
           }}>
             {recent.length === 0 ? (
               <div style={{ padding: '60px 20px', textAlign: 'center' }}>
-                <div style={{ fontSize: 52, marginBottom: 16, opacity: 0.8 }}>📭</div>
-                <p style={{ color: '#9ca3af', fontSize: 15 }}>No bookings yet. They'll appear here when submitted.</p>
+                <div style={{ fontSize: 52, marginBottom: 16, opacity: 0.8 }}>✅</div>
+                <p style={{ color: '#9ca3af', fontSize: 15 }}>No pending booking requests right now. Check back later or review all bookings if needed.</p>
               </div>
             ) : (
               <div style={{ overflowX: 'auto' }}>
@@ -276,7 +301,7 @@ const formatTime12h = (timeStr) => {
                             }}>{b.status}</span>
                           </td>
                           <td style={{ padding: '14px 18px', textAlign: 'right' }}>
-                            <Link href={`/admin/bookings/${b._id}`}>
+                            <Link href={`/admin/bookings?bookingId=${b._id}`}>
                               <span style={{
                                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                                 width: 32, height: 32, borderRadius: 8,

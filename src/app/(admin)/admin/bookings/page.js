@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import styles from './bookings.module.css';
 import { openBookingPrintWindow } from '../../../../lib/bookingPrint';
 
@@ -51,6 +51,8 @@ const formatDateTime = (dt) => {
 };
 
 function ManageBookingsContent() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const initialFilter = searchParams.get('status') || 'all';
 
@@ -60,6 +62,7 @@ function ManageBookingsContent() {
   const [activeService, setActiveService] = useState('all');
   const [modal, setModal] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [activeBookingId, setActiveBookingId] = useState(searchParams.get('bookingId') || null);
   const [adminNote, setAdminNote] = useState('');
   const [updating, setUpdating] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
@@ -82,8 +85,31 @@ function ManageBookingsContent() {
     return () => clearTimeout(timeoutId);
   }, [fetchBookings]);
 
+  useEffect(() => {
+    if (!activeBookingId || !bookings.length || modal) return;
+    const target = bookings.find(b => b._id === activeBookingId);
+    if (target) {
+      setSelected(target);
+      setAdminNote(target.adminNote || '');
+      setModal(true);
+    }
+  }, [activeBookingId, bookings, modal]);
+
   const openReview = (b) => { setSelected(b); setAdminNote(b.adminNote || ''); setModal(true); };
-  const closeModal = () => { setModal(false); setSelected(null); setConfirmModal(false); setPendingAction(null); };
+  const closeModal = () => {
+    setModal(false);
+    setActiveBookingId(null);
+    setSelected(null);
+    setConfirmModal(false);
+    setPendingAction(null);
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (params.has('bookingId')) {
+      params.delete('bookingId');
+      const search = params.toString();
+      router.replace(`${pathname}${search ? `?${search}` : ''}`);
+    }
+  };
 
   const showConfirmation = (status) => {
     setPendingAction(status);
@@ -188,7 +214,7 @@ function ManageBookingsContent() {
             {filtered.map((b) => {
               const bookingPurpose = b.purpose || b.roomPurpose || b.specialRequests;
               return (
-                <div key={b._id} className={styles.card} onClick={() => b.status === 'pending' && openReview(b)} style={{ cursor: b.status === 'pending' ? 'pointer' : 'default' }}>
+                <div key={b._id} className={styles.card} onClick={() => openReview(b)} style={{ cursor: 'pointer' }}>
                   <div className={styles.cardTop}>
                     <div className={styles.userInfo}>
                       <div className={styles.avatar}>{b.user?.name?.[0]?.toUpperCase()}</div>
@@ -243,7 +269,7 @@ function ManageBookingsContent() {
                       </div>
                     )}
                   </div>
-                  {b.status === 'pending' && <div className={styles.actionHint}>Click to review →</div>}
+                  <div className={styles.actionHint}>{b.status === 'pending' ? 'Click to review →' : 'View details →'}</div>
                 </div>
               );
             })}
@@ -302,14 +328,20 @@ function ManageBookingsContent() {
                 value={adminNote} onChange={e => setAdminNote(e.target.value)} style={{ resize: 'vertical' }} />
             </div>
 
-            <div className={styles.decisionBtns}>
-              <button className="btn-danger" onClick={() => showConfirmation('rejected')} disabled={updating}>
-                ❌ Reject
-              </button>
-              <button className="btn-success" onClick={() => showConfirmation('approved')} disabled={updating}>
-                ✅ Approve
-              </button>
-            </div>
+            {selected.status === 'pending' ? (
+              <div className={styles.decisionBtns}>
+                <button className="btn-danger" onClick={() => showConfirmation('rejected')} disabled={updating}>
+                  ❌ Reject
+                </button>
+                <button className="btn-success" onClick={() => showConfirmation('approved')} disabled={updating}>
+                  ✅ Approve
+                </button>
+              </div>
+            ) : (
+              <div style={{ marginTop: 16, fontSize: 14, color: 'var(--text-secondary)' }}>
+                This booking is already <strong>{selected.status}</strong> and cannot be reviewed again here.
+              </div>
+            )}
           </div>
         </div>
       )}

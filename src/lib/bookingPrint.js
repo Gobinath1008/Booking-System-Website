@@ -64,10 +64,10 @@ const getBookingDetails = (booking, serviceDetails = {}) => {
   switch (booking.serviceType) {
     case 'hall':
       return {
-        date: booking.hallDate,
-        time: `${formatTime12h(booking.hallStartTime)} - ${formatTime12h(booking.hallEndTime)}`,
+        dateHtml: `<div><strong>Date:</strong> ${escapeHtml(booking.hallDate)}</div><div><strong>From:</strong> ${escapeHtml(formatTime12h(booking.hallStartTime))}</div><div><strong>To:</strong> ${escapeHtml(formatTime12h(booking.hallEndTime))}</div>`,
+        time: '',
         location: `🏛️ ${escapeHtml(hall?.name || 'Hall')}`,
-        description: `<div><strong>${escapeHtml(booking.hallDate)} | ${formatTime12h(booking.hallStartTime)} to ${formatTime12h(booking.hallEndTime)}</strong></div><div>${escapeHtml(booking.attendees || 0)} attendees</div>${booking.purpose ? `<div><strong>Purpose:</strong> ${escapeHtml(booking.purpose)}</div>` : ''}`,
+        description: `<div>${escapeHtml(booking.attendees || 0)} attendees</div>${booking.purpose ? `<div><strong>Purpose:</strong> ${escapeHtml(booking.purpose)}</div>` : ''}`,
       };
     case 'vehicle': {
       const driverText = booking.withDriver ? 'With Driver' : 'Self-drive';
@@ -76,21 +76,22 @@ const getBookingDetails = (booking, serviceDetails = {}) => {
         : '';
 
       return {
-        date: `${escapeHtml(booking.vehiclePickupDate)} to ${escapeHtml(booking.vehicleReturnDate)}`,
-        time: `${formatTime12h(booking.vehiclePickupTime || '09:00')} - ${formatTime12h(booking.vehicleReturnTime || '09:00')}`,
+        dateHtml: `<div><strong>Pickup:</strong> ${escapeHtml(booking.vehiclePickupDate)} ${escapeHtml(formatTime12h(booking.vehiclePickupTime || '09:00'))}</div><div><strong>Return:</strong> ${escapeHtml(booking.vehicleReturnDate)} ${escapeHtml(formatTime12h(booking.vehicleReturnTime || '09:00'))}</div>`,
+        time: '',
         location: `🚗 ${escapeHtml(vehicle?.name || 'Vehicle')} (${escapeHtml(vehicle?.registrationNumber || 'N/A')})`,
-        description: `<div><strong>Pickup:</strong> ${escapeHtml(booking.vehiclePickupDate)} at ${formatTime12h(booking.vehiclePickupTime || '09:00')}</div><div><strong>Return:</strong> ${escapeHtml(booking.vehicleReturnDate)} at ${formatTime12h(booking.vehicleReturnTime || '09:00')}</div><div>${escapeHtml(driverText)}${routeInfo}</div>${booking.purpose ? `<div><strong>Purpose:</strong> ${escapeHtml(booking.purpose)}</div>` : ''}`,
+        description: `<div>${escapeHtml(driverText)}${routeInfo}</div>${booking.purpose ? `<div><strong>Purpose:</strong> ${escapeHtml(booking.purpose)}</div>` : ''}`,
       };
     }
     case 'room': {
       const roomPurpose = booking.roomPurpose || booking.specialRequests;
       return {
-        date: `Check-in: ${escapeHtml(booking.roomCheckInDate)} | Check-out: ${escapeHtml(booking.roomCheckOutDate)}`,
-        time: `${formatTime12h(booking.roomCheckInTime || '14:00')} to ${formatTime12h(booking.roomCheckOutTime || '12:00')}`,
+        dateHtml: `<div><strong>Check-in:</strong> ${escapeHtml(booking.roomCheckInDate)} ${escapeHtml(formatTime12h(booking.roomCheckInTime || '14:00'))}</div><div><strong>Check-out:</strong> ${escapeHtml(booking.roomCheckOutDate)} ${escapeHtml(formatTime12h(booking.roomCheckOutTime || '12:00'))}</div>`,
+        time: '',
         location: `🏨 ${escapeHtml(room?.name || 'Room')} #${escapeHtml(room?.roomNumber || 'N/A')}${room?.floor !== undefined && room?.floor !== null ? ` (Floor ${escapeHtml(String(room.floor))})` : ''}`,
-        description: `<div><strong>Check-in:</strong> ${escapeHtml(booking.roomCheckInDate)} at ${formatTime12h(booking.roomCheckInTime || '14:00')}</div><div><strong>Check-out:</strong> ${escapeHtml(booking.roomCheckOutDate)} at ${formatTime12h(booking.roomCheckOutTime || '12:00')}</div><div>${escapeHtml(booking.numberOfGuests ? `${booking.numberOfGuests} guests` : 'N/A guests')}${booking.numberOfRooms ? ` • ${escapeHtml(String(booking.numberOfRooms))} room${booking.numberOfRooms > 1 ? 's' : ''}` : ''}</div>${roomPurpose ? `<div><strong>Purpose:</strong> ${escapeHtml(roomPurpose)}</div>` : ''}`,
+        description: `<div>${escapeHtml(booking.numberOfGuests ? `${booking.numberOfGuests} guests` : 'N/A guests')}${booking.numberOfRooms ? ` • ${escapeHtml(String(booking.numberOfRooms))} room${booking.numberOfRooms > 1 ? 's' : ''}` : ''}</div>${roomPurpose ? `<div><strong>Purpose:</strong> ${escapeHtml(roomPurpose)}</div>` : ''}`,
       };
-    }    default:
+    }
+    default:
       return { date: 'N/A', time: 'N/A', location: 'N/A', description: 'N/A' };
   }
 };
@@ -108,11 +109,11 @@ export const buildBookingPrintHtml = (bookings, options = {}) => {
     const detailLines = [
       `<div>${details.location}</div>`,
       `<div>${details.description}</div>`,
-      `<div>By: ${escapeHtml(booking.guestName || booking.user?.name || 'Unknown')}</div>`,
+      `<div><strong>Booked by:</strong> ${escapeHtml(booking.guestName || booking.user?.name || 'Unknown')}</div>`,
     ];
 
     const actionInfo = booking.actionBy?.name && status !== 'pending'
-      ? `${status === 'approved' ? 'Approved by:' : status === 'rejected' ? 'Rejected by:' : 'Cancelled by:'} ${booking.actionBy.name}${booking.actionAt ? ' — ' + formatDateTime(booking.actionAt) : ''}`
+      ? `${status === 'approved' ? '<strong>Approved by:</strong>' : status === 'rejected' ? '<strong>Rejected by:</strong>' : '<strong>Cancelled by:</strong>'} ${escapeHtml(booking.actionBy.name)}${booking.actionAt ? ' — ' + formatDateTime(booking.actionAt) : ''}`
       : '';
     const cancelledInfo = !booking.actionBy?.name && status === 'cancelled' && booking.cancelledAt
       ? `Cancelled at: ${formatDateTime(booking.cancelledAt)}`
@@ -124,7 +125,7 @@ export const buildBookingPrintHtml = (bookings, options = {}) => {
       <tr>
         <td>${index + 1}</td>
         <td>${escapeHtml(booking.serviceType === 'hall' ? 'Hall Booking' : booking.serviceType === 'vehicle' ? 'Vehicle Booking' : 'Room Booking')}</td>
-        <td>${escapeHtml(details.date)}</td>
+        <td class="date-cell">${details.dateHtml || escapeHtml(details.date)}</td>
         <td class="details-cell">${detailLines.filter(Boolean).join('')}</td>
         <td>
           <span class="status ${escapeHtml(status)}">${escapeHtml(statusLabel)}</span>
@@ -139,15 +140,15 @@ export const buildBookingPrintHtml = (bookings, options = {}) => {
     <head>
       <title>Knowledge Institute of Technology, Salem</title>
       <style>
-        @page { size: auto; margin: 10mm; }
-        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; color: #1f2937; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; page-break-inside: auto; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; vertical-align: top; }
+        @page { size: auto; margin: 8mm; }
+        body { font-family: Arial, sans-serif; margin: 16px; line-height: 1.3; color: #1f2937; font-size: 11px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; page-break-inside: auto; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
         td.details-cell { text-align: left; vertical-align: top; }
-        td.details-cell div { margin-bottom: 6px; }
+        td.details-cell div { margin-bottom: 3px; }
         th { background-color: #1e3a8a; color: white; font-weight: bold; }
-        tr { page-break-inside: avoid; }
-        tbody tr:nth-child(4n) { page-break-after: always; }
+        tr { page-break-inside: avoid; page-break-after: auto; }
+        td, th { page-break-inside: avoid; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         .status { font-weight: bold; padding: 4px 8px; border-radius: 4px; display: block; margin-bottom: 8px; }
         .pending { background: rgba(243,156,18,0.2); color: #F39C12; }
