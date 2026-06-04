@@ -27,7 +27,16 @@ export async function getServerUser() {
 
 // Basic authentication - any logged in user
 export async function requireAuth(request) {
-  const token = request.cookies.get('token')?.value;
+  let token = request?.cookies?.get('token')?.value;
+  if (!token) {
+    try {
+      const cookieStore = await cookies();
+      token = cookieStore.get('token')?.value;
+    } catch (e) {
+      console.error('Error reading cookies in requireAuth:', e);
+    }
+  }
+
   if (!token) {
     return { error: NextResponse.json({ message: 'Not authenticated' }, { status: 401 }) };
   }
