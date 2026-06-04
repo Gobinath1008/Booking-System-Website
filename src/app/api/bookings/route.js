@@ -79,13 +79,30 @@ export async function GET(request) {
     { path: 'actionBy', select: 'name' }
   ];
 
-  if (!serviceType || serviceType === 'hall') {
+  const isUser = !user || (user.role !== 'admin' && user.role !== 'super-admin');
+
+  const showHalls = user?.role === 'super-admin' || isUser || 
+                    (user.role === 'admin' && 
+                     (user.assignedServices?.includes('halls') || !user.assignedServices || user.assignedServices.length === 0) && 
+                     user.permissions?.hallAccess !== false);
+
+  const showVehicles = user?.role === 'super-admin' || isUser || 
+                       (user.role === 'admin' && 
+                        (user.assignedServices?.includes('vehicles') || !user.assignedServices || user.assignedServices.length === 0) && 
+                        user.permissions?.vehicleAccess !== false);
+
+  const showRooms = user?.role === 'super-admin' || isUser || 
+                    (user.role === 'admin' && 
+                     (user.assignedServices?.includes('rooms') || !user.assignedServices || user.assignedServices.length === 0) && 
+                     user.permissions?.guestRoomAccess !== false);
+
+  if ((!serviceType || serviceType === 'hall') && showHalls) {
     halls = await HallBooking.find(query).populate([...populateOpts, { path: 'serviceId', select: 'name' }]).sort({ createdAt: -1 });
   }
-  if (!serviceType || serviceType === 'vehicle') {
+  if ((!serviceType || serviceType === 'vehicle') && showVehicles) {
     vehicles = await VehicleBooking.find(query).populate([...populateOpts, { path: 'serviceId', select: 'name registrationNumber capacity' }]).sort({ createdAt: -1 });
   }
-  if (!serviceType || serviceType === 'room') {
+  if ((!serviceType || serviceType === 'room') && showRooms) {
     rooms = await RoomBooking.find(query).select('+specialRequests').populate([...populateOpts, { path: 'serviceId', select: 'name roomNumber' }]).sort({ createdAt: -1 });
   }
 

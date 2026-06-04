@@ -68,6 +68,7 @@ function ManageBookingsContent() {
   const [confirmModal, setConfirmModal] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
+  const [user, setUser] = useState(null);
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -84,6 +85,13 @@ function ManageBookingsContent() {
 
     return () => clearTimeout(timeoutId);
   }, [fetchBookings]);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => setUser(data))
+      .catch(err => console.error('Error fetching user info:', err));
+  }, []);
 
   useEffect(() => {
     if (!activeBookingId || !bookings.length || modal) return;
@@ -155,6 +163,15 @@ function ManageBookingsContent() {
     });
   };
 
+  const showHall = !user || user.role === 'super-admin' || (user.role === 'admin' && (user.assignedServices?.includes('halls') || !user.assignedServices || user.assignedServices.length === 0) && user.permissions?.hallAccess !== false);
+  const showVehicle = !user || user.role === 'super-admin' || (user.role === 'admin' && (user.assignedServices?.includes('vehicles') || !user.assignedServices || user.assignedServices.length === 0) && user.permissions?.vehicleAccess !== false);
+  const showRoom = !user || user.role === 'super-admin' || (user.role === 'admin' && (user.assignedServices?.includes('rooms') || !user.assignedServices || user.assignedServices.length === 0) && user.permissions?.guestRoomAccess !== false);
+
+  const allowedServiceTypes = ['all'];
+  if (showHall) allowedServiceTypes.push('hall');
+  if (showVehicle) allowedServiceTypes.push('vehicle');
+  if (showRoom) allowedServiceTypes.push('room');
+
   const filtered = (activeTab === 'all' ? bookings : bookings.filter(b => b.status === activeTab))
     .filter(b => activeService === 'all' || b.serviceType === activeService);
   
@@ -187,7 +204,7 @@ function ManageBookingsContent() {
 
         <div className="tabs" style={{ marginTop: 20, marginBottom: 24 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginRight: 12, alignSelf: 'center' }}>Filter by Service:</span>
-          {SERVICE_TYPES.map(service => (
+          {allowedServiceTypes.map(service => (
             <button key={service} className={`tab-btn ${activeService === service ? 'active' : ''}`}
               onClick={() => setActiveService(service)}
               style={{ marginRight: 8 }}>
