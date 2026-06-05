@@ -11,9 +11,8 @@ export async function GET(request) {
   const search = searchParams.get('search');
   const roomType = searchParams.get('roomType');
   const city = searchParams.get('city');
-  const minPrice = searchParams.get('minPrice');
-  const maxPrice = searchParams.get('maxPrice');
   const occupancy = searchParams.get('occupancy');
+  const hostelType = searchParams.get('hostelType');
   const all = searchParams.get('all');
 
   // If id provided, return single room
@@ -43,13 +42,9 @@ export async function GET(request) {
     ];
   }
   if (roomType) query.roomType = roomType;
+  if (hostelType) query.hostelType = hostelType;
   if (city) query.city = { $regex: city, $options: 'i' };
   if (occupancy) query.occupancy = { $gte: parseInt(occupancy) };
-  if (minPrice || maxPrice) {
-    query.pricePerDay = {};
-    if (minPrice) query.pricePerDay.$gte = parseInt(minPrice);
-    if (maxPrice) query.pricePerDay.$lte = parseInt(maxPrice);
-  }
 
   const rooms = await GuestRoom.find(query).sort({ floor: 1, roomNumber: 1 });
   return NextResponse.json(rooms);
@@ -61,9 +56,9 @@ export async function POST(request) {
   
   await connectDB();
   const body = await request.json();
-  const { name, roomType, roomNumber, floor, occupancy, pricePerDay, pricePerNight, location, city, state, address, zipCode } = body;
+  const { name, roomType, roomNumber, floor, occupancy, location, city, state, address, zipCode, hostelType } = body;
 
-  if (!name || !roomType || !roomNumber || floor === undefined || occupancy === undefined || pricePerDay === undefined || pricePerNight === undefined || !location) {
+  if (!name || !roomType || !roomNumber || floor === undefined || occupancy === undefined || !location || !hostelType) {
     return NextResponse.json({ message: 'Required fields are missing' }, { status: 400 });
   }
 
@@ -78,13 +73,12 @@ export async function POST(request) {
     roomNumber,
     floor,
     occupancy,
-    pricePerDay,
-    pricePerNight,
     location,
     city,
     state,
     address,
     zipCode,
+    hostelType,
   });
 
   return NextResponse.json(room, { status: 201 });

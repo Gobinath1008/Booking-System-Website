@@ -9,15 +9,14 @@ const EMPTY_FORM = {
   roomNumber: '',
   floor: 1,
   occupancy: 2,
-  pricePerDay: 0,
-  pricePerNight: 0,
   location: '',
   city: '',
   state: '',
   address: '',
   zipCode: '',
   status: 'available',
-  isActive: true
+  isActive: true,
+  hostelType: 'boys'
 };
 
 export default function RoomsPage() {
@@ -26,11 +25,6 @@ export default function RoomsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [formData, setFormData] = useState(EMPTY_FORM);
-
-  useEffect(() => {
-    fetchRooms();
-  }, []);
-
   const fetchRooms = async () => {
     try {
       const res = await fetch('/api/rooms?all=true');
@@ -43,6 +37,10 @@ export default function RoomsPage() {
     }
   };
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchRooms();
+  }, []);
   const handleToggleForm = () => {
     if (showForm) {
       setShowForm(false);
@@ -61,15 +59,14 @@ export default function RoomsPage() {
       roomNumber: room.roomNumber || '',
       floor: room.floor || 1,
       occupancy: room.occupancy || 2,
-      pricePerDay: room.pricePerDay || 0,
-      pricePerNight: room.pricePerNight || 0,
       location: room.location || '',
       city: room.city || '',
       state: room.state || '',
       address: room.address || '',
       zipCode: room.zipCode || '',
       status: room.status || 'available',
-      isActive: room.isActive !== false
+      isActive: room.isActive !== false,
+      hostelType: room.hostelType || 'boys'
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -152,8 +149,11 @@ export default function RoomsPage() {
   return (
     <div className={styles.page}>
       <div className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h1 className={styles.title}>🏨 Room Management</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '36px', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>🏨 Room Management</h1>
+            <p className="page-subtitle">{rooms.length} rooms registered in system</p>
+          </div>
           <button onClick={handleToggleForm} className="btn-primary">
             {showForm ? '✕ Close' : '➕ Add Room'}
           </button>
@@ -197,6 +197,18 @@ export default function RoomsPage() {
                   </select>
                 </div>
                 <div className="form-group">
+                  <label className="form-label">Hostel Type</label>
+                  <select
+                    className="form-input"
+                    value={formData.hostelType}
+                    onChange={(e) => setFormData({...formData, hostelType: e.target.value})}
+                    required
+                  >
+                    <option value="boys">Boys Hostel</option>
+                    <option value="girls">Girls Hostel</option>
+                  </select>
+                </div>
+                <div className="form-group">
                   <label className="form-label">Room Number</label>
                   <input
                     type="text"
@@ -230,30 +242,7 @@ export default function RoomsPage() {
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Price Per Day</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    placeholder="Price Per Day"
-                    value={formData.pricePerDay}
-                    onChange={(e) => setFormData({...formData, pricePerDay: parseFloat(e.target.value) || 0})}
-                    min="0"
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Price Per Night</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    placeholder="Price Per Night"
-                    value={formData.pricePerNight}
-                    onChange={(e) => setFormData({...formData, pricePerNight: parseFloat(e.target.value) || 0})}
-                    min="0"
-                    required
-                  />
-                </div>
+
                 <div className="form-group">
                   <label className="form-label">Status</label>
                   <select
@@ -357,42 +346,45 @@ export default function RoomsPage() {
             <div className="empty-sub">Add your first room to get started</div>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px', justifyContent: 'center' }}>
             {rooms.map((room) => (
               <motion.div
                 key={room._id}
                 className="card"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
+                style={{ height: '100%' }}
               >
-                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
-                  <div>
-                    <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ padding: '32px 24px', display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center', textAlign: 'center', justifyContent: 'space-between', gap: 16 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
                       {room.name}
                       {room.isActive === false && (
-                        <span className="badge badge-rejected" style={{ marginLeft: '8px', fontSize: '10px' }}>
+                        <span className="badge badge-rejected" style={{ fontSize: '10px' }}>
                           Hidden
                         </span>
                       )}
                     </h3>
-                    <p style={{ color: '#666', marginBottom: '12px' }}>
+                    <p style={{ color: '#666', fontSize: '14px' }}>
                       Room {room.roomNumber} • Floor {room.floor}
                     </p>
-                    <p style={{ marginBottom: '4px' }}>Room Type: {room.roomType.toUpperCase()}</p>
-                    <p style={{ marginBottom: '4px' }}>👥 Occupancy: {room.occupancy} guests</p>
-                    <p style={{ marginBottom: '4px' }}>💰 Day Price: ₹{room.pricePerDay} | Night Price: ₹{room.pricePerNight}</p>
-                    <p style={{ marginBottom: '4px' }}>📍 {room.location}</p>
-
-                    <p style={{ color: '#999', fontSize: '12px', marginTop: '8px' }}>
-                      {room.city}, {room.state}
-                    </p>
-                    <div style={{ marginTop: '12px' }}>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, margin: '8px 0', fontSize: '13px', color: '#4b5563' }}>
+                      <div>🏢 Hostel: <strong style={{ textTransform: 'capitalize' }}>{room.hostelType || 'boys'}</strong></div>
+                      <div>Type: {room.roomType.toUpperCase()}</div>
+                      <div>👥 Occupancy: {room.occupancy} guests</div>
+                      <div>📍 {room.location}</div>
+                      <div style={{ color: '#999', fontSize: '12px' }}>{room.city}, {room.state}</div>
+                    </div>
+                    
+                    <div style={{ marginTop: '4px' }}>
                       <span className={`badge badge-${room.status}`}>{room.status}</span>
                     </div>
+
                     {room.amenities && room.amenities.length > 0 && (
-                      <div style={{ marginTop: '12px' }}>
+                      <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center' }}>
                         {room.amenities.map(amenity => (
-                          <span key={amenity} style={{ display: 'inline-block', fontSize: '12px', backgroundColor: '#f0f0f0', padding: '4px 8px', borderRadius: '4px', marginRight: '4px', marginBottom: '4px' }}>
+                          <span key={amenity} style={{ display: 'inline-block', fontSize: '11px', backgroundColor: '#f0f2fc', color: '#4f46e5', border: '1px solid #e2e8f0', padding: '3px 8px', borderRadius: '6px' }}>
                             {amenity}
                           </span>
                         ))}
@@ -400,7 +392,7 @@ export default function RoomsPage() {
                     )}
                   </div>
 
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '20px', justifyContent: 'flex-end' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
                     <button className="btn-secondary btn-sm" onClick={() => handleStartEdit(room)}>
                       ✏️ Edit
                     </button>

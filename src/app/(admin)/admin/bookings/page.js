@@ -94,6 +94,7 @@ function ManageBookingsContent() {
   }, []);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (!activeBookingId || !bookings.length || modal) return;
     const target = bookings.find(b => b._id === activeBookingId);
     if (target) {
@@ -101,6 +102,7 @@ function ManageBookingsContent() {
       setAdminNote(target.adminNote || '');
       setModal(true);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [activeBookingId, bookings, modal]);
 
   const openReview = (b) => { setSelected(b); setAdminNote(b.adminNote || ''); setModal(true); };

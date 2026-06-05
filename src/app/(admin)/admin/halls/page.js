@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import styles from './halls.module.css';
 
 const FACILITIES_OPTIONS = ['Projector','AC','Whiteboard','WiFi','Mic','Sound System','Stage','Chairs','Tables','Camera'];
-const EMPTY_FORM = { name: '', capacity: '', location: '', description: '', facilities: [], isActive: true };
+const EMPTY_FORM = { name: '', capacity: '', location: '', description: '', facilities: [], isActive: true, hallType: 'seminar', address: '', city: '', state: '' };
 
 export default function ManageHallsPage() {
   const [halls, setHalls] = useState([]);
@@ -20,10 +20,13 @@ export default function ManageHallsPage() {
     setHalls(await res.json());
     setLoading(false);
   };
-  useEffect(() => { fetchHalls(); }, []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchHalls();
+  }, []);
 
   const openAdd = () => { setEditing(null); setForm(EMPTY_FORM); setErrors({}); setModal(true); };
-  const openEdit = (h) => { setEditing(h); setForm({ name: h.name, capacity: String(h.capacity), location: h.location, description: h.description || '', facilities: [...(h.facilities || [])], isActive: h.isActive !== false }); setErrors({}); setModal(true); };
+  const openEdit = (h) => { setEditing(h); setForm({ name: h.name, capacity: String(h.capacity), location: h.location, description: h.description || '', facilities: [...(h.facilities || [])], isActive: h.isActive !== false, hallType: h.hallType || 'seminar', address: h.address || '', city: h.city || '', state: h.state || '' }); setErrors({}); setModal(true); };
   const closeModal = () => setModal(false);
 
   const toggleFacility = (f) => setForm(prev => ({ ...prev, facilities: prev.facilities.includes(f) ? prev.facilities.filter(x => x !== f) : [...prev.facilities, f] }));
@@ -33,13 +36,28 @@ export default function ManageHallsPage() {
     if (!form.name.trim()) e.name = 'Required';
     if (!form.capacity || isNaN(form.capacity)) e.capacity = 'Valid number required';
     if (!form.location.trim()) e.location = 'Required';
+    if (!form.hallType) e.hallType = 'Required';
+    if (!form.address.trim()) e.address = 'Required';
+    if (!form.city.trim()) e.city = 'Required';
+    if (!form.state.trim()) e.state = 'Required';
     setErrors(e); return Object.keys(e).length === 0;
   };
 
   const handleSave = async () => {
     if (!validate()) return;
     setSaving(true);
-    const payload = { name: form.name.trim(), capacity: parseInt(form.capacity), location: form.location.trim(), description: form.description.trim(), facilities: form.facilities, isActive: form.isActive };
+    const payload = {
+      name: form.name.trim(),
+      capacity: parseInt(form.capacity),
+      location: form.location.trim(),
+      description: form.description.trim(),
+      facilities: form.facilities,
+      isActive: form.isActive,
+      hallType: form.hallType,
+      address: form.address.trim(),
+      city: form.city.trim(),
+      state: form.state.trim(),
+    };
     try {
       const res = await fetch(editing ? `/api/halls/${editing._id}` : '/api/halls', {
         method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
@@ -83,10 +101,10 @@ export default function ManageHallsPage() {
   return (
     <div className={styles.page}>
       <div className="container">
-        <div className={styles.header}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '36px', flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <h1 className="page-title">Manage Halls</h1>
-            <p className="page-subtitle">{halls.length} halls registered</p>
+            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>🏛️ Manage Halls</h1>
+            <p className="page-subtitle">{halls.length} halls registered in inventory</p>
           </div>
           <button className="btn-primary" onClick={openAdd}>➕ Add New Hall</button>
         </div>
@@ -108,9 +126,12 @@ export default function ManageHallsPage() {
                   <div className={styles.hallInfo}>
                     <div className={styles.hallName}>
                       {h.name}
-                      {h.isActive === false && <span className="badge badge-rejected" style={{marginLeft: '8px', fontSize: '10px'}}>Hidden</span>}
+                      {h.isActive === false && <span className="badge badge-rejected" style={{ fontSize: '10px' }}>Hidden</span>}
                     </div>
                     <div className={styles.hallMeta}>📍 {h.location} &nbsp;•&nbsp; 👥 {h.capacity} seats</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', marginBottom: '4px' }}>
+                      🏷️ {h.hallType?.toUpperCase()}
+                    </div>
                     {h.facilities?.length > 0 && (
                       <div className={styles.facilities}>{h.facilities.map(f => <span key={f} className={styles.facilityTag}>{f}</span>)}</div>
                     )}
@@ -159,6 +180,40 @@ export default function ManageHallsPage() {
                 <input className={`form-input ${errors.location ? 'error' : ''}`} placeholder="e.g. Block B, Floor 2"
                   value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
                 {errors.location && <div className="error-msg">{errors.location}</div>}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Hall Type</label>
+              <select className={`form-input ${errors.hallType ? 'error' : ''}`}
+                value={form.hallType} onChange={e => setForm(f => ({ ...f, hallType: e.target.value }))}>
+                <option value="seminar">Seminar Hall</option>
+                <option value="conference">Conference Hall</option>
+                <option value="event">Event Hall</option>
+                <option value="marriage">Marriage Hall</option>
+              </select>
+              {errors.hallType && <div className="error-msg">{errors.hallType}</div>}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Address</label>
+              <input className={`form-input ${errors.address ? 'error' : ''}`} placeholder="e.g. 123 Education St"
+                value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
+              {errors.address && <div className="error-msg">{errors.address}</div>}
+            </div>
+
+            <div className={styles.row2}>
+              <div className="form-group">
+                <label className="form-label">City</label>
+                <input className={`form-input ${errors.city ? 'error' : ''}`} placeholder="e.g. Salem"
+                  value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
+                {errors.city && <div className="error-msg">{errors.city}</div>}
+              </div>
+              <div className="form-group">
+                <label className="form-label">State</label>
+                <input className={`form-input ${errors.state ? 'error' : ''}`} placeholder="e.g. Tamil Nadu"
+                  value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} />
+                {errors.state && <div className="error-msg">{errors.state}</div>}
               </div>
             </div>
 

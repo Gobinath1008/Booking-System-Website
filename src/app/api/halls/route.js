@@ -49,11 +49,22 @@ export async function POST(request) {
   if (error) return error;
   await connectDB();
   const body = await request.json();
-  const { name, capacity, location, facilities, description, isActive } = body;
-  if (!name || !capacity || !location)
-    return NextResponse.json({ message: 'Name, capacity and location are required' }, { status: 400 });
+  const { name, capacity, location, facilities, description, isActive, hallType, address, city, state } = body;
+  if (!name || !capacity || !location || !hallType || !address || !city || !state)
+    return NextResponse.json({ message: 'Required fields are missing (Name, capacity, location, hall type, address, city, state)' }, { status: 400 });
   const exists = await Hall.findOne({ name });
   if (exists) return NextResponse.json({ message: 'Hall with this name already exists' }, { status: 400 });
-  const hall = await Hall.create({ name, capacity, location, facilities: facilities || [], description, isActive: isActive !== false });
+  const hall = await Hall.create({
+    name,
+    capacity,
+    location,
+    facilities: facilities || [],
+    description,
+    isActive: isActive !== false,
+    hallType,
+    address,
+    city,
+    state
+  });
   return NextResponse.json(hall, { status: 201 });
 }

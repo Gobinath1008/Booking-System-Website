@@ -10,8 +10,10 @@ if (!MONGODB_URI) {
  * Connect to MongoDB using Mongoose. The connection is cached to prevent
  * multiple connections in development (hot reloading).
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let cached = (global as any).mongooseCache;
 if (!cached) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cached = (global as any).mongooseCache = { conn: null, promise: null };
 }
 

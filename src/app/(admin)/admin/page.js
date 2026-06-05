@@ -121,7 +121,7 @@ const formatTime12h = (timeStr) => {
       <header style={{
         background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(20px)',
         borderBottom: '1.5px solid #e2e6f3',
-        position: 'sticky', top: 0, zIndex: 20,
+        position: 'sticky', top: '66px', zIndex: 20,
       }}>
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 68 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -174,13 +174,13 @@ const formatTime12h = (timeStr) => {
       <main style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px 80px' }}>
 
         {/* Welcome */}
-        <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 36 }}>
-          <h2 style={{ fontSize: 28, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-0.5px', marginBottom: 6 }}>Welcome back, Admin 👋</h2>
-          <p style={{ color: '#4b5563', fontSize: 15 }}>Here's an overview of your hall bookings and management tools.</p>
+        <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 40, textAlign: 'center' }}>
+          <h2 style={{ fontSize: 32, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-0.5px', marginBottom: 8 }}>Welcome back, Admin 👋</h2>
+          <p style={{ color: '#4b5563', fontSize: 16 }}>Here&apos;s an overview of your hall bookings and management tools.</p>
         </motion.div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', gap: 16, marginBottom: 40 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 24, marginBottom: 48, justifyContent: 'center' }}>
           {STAT_CARDS.map((s, i) => (
             <motion.div
               key={s.label}
@@ -188,42 +188,47 @@ const formatTime12h = (timeStr) => {
               transition={{ delay: i * 0.08 }}
               style={{
                 background: '#ffffff', border: `1.5px solid #e2e6f3`,
-                borderRadius: 20, padding: '24px',
-                borderTop: `3px solid ${s.color}`,
+                borderRadius: 20, padding: '28px 24px',
+                borderTop: `4px solid ${s.color}`,
                 transition: 'all 0.3s ease',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
               }}
               whileHover={{ y: -4, boxShadow: `0 12px 30px rgba(91,79,232,0.06), 0 0 20px ${s.glow}40` }}
             >
-              <div style={{ fontSize: 30, marginBottom: 12, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.05))' }}>{s.icon}</div>
-              <div style={{ fontSize: 36, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-1.5px', marginBottom: 4 }}>{s.value}</div>
-              <div style={{ fontSize: 11, color: '#4b5563', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>{s.label}</div>
+              <div style={{ fontSize: 32, marginBottom: 14, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.05))' }}>{s.icon}</div>
+              <div style={{ fontSize: 38, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-1.5px', marginBottom: 6, lineHeight: 1 }}>{s.value}</div>
+              <div style={{ fontSize: 11, color: '#4b5563', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>{s.label}</div>
             </motion.div>
           ))}
         </div>
 
         {/* Quick Tools */}
-        <section style={{ marginBottom: 40 }}>
-          <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e', marginBottom: 20 }}>Quick Tools</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px,1fr))', gap: 16 }}>
+        <section style={{ marginBottom: 48 }}>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e', marginBottom: 24, textAlign: 'center' }}>Quick Tools</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 24, justifyContent: 'center' }}>
             {QUICK_TOOLS.map((t, i) => (
-              <Link key={t.href} href={t.href}>
+              <Link key={t.href} href={t.href} style={{ display: 'flex' }}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 + i * 0.08 }}
                   whileHover={{ y: -5, boxShadow: `0 12px 30px rgba(91,79,232,0.08), 0 0 0 1.5px ${t.color}50` }}
                   style={{
                     background: '#ffffff', border: '1.5px solid #e2e6f3',
-                    borderRadius: 20, padding: '28px 24px',
-                    cursor: 'pointer', transition: 'all 0.3s ease', display: 'flex', flexDirection: 'column', gap: 8,
+                    borderRadius: 20, padding: '32px 24px',
+                    cursor: 'pointer', transition: 'all 0.3s ease', 
+                    display: 'flex', flexDirection: 'column', 
+                    alignItems: 'center', textAlign: 'center', 
+                    gap: 12,
+                    width: '100%'
                   }}
                 >
                   <div style={{
-                    width: 52, height: 52, borderRadius: 14, marginBottom: 8,
+                    width: 56, height: 56, borderRadius: 16,
                     background: `${t.color}10`, border: `1.5px solid ${t.color}25`,
-                    display: 'flex', alignItems: 'center', justifycontent: 'center', fontSize: 26,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26,
                   }}>{t.icon}</div>
                   <div style={{ fontSize: 16, fontWeight: 800, color: '#1a1a2e' }}>{t.label}</div>
-                  <div style={{ fontSize: 13, color: '#4b5563' }}>{t.sub}</div>
+                  <div style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.5, flexGrow: 1 }}>{t.sub}</div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: t.color, marginTop: 8 }}>Open →</div>
                 </motion.div>
               </Link>

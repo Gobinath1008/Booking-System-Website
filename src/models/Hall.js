@@ -10,7 +10,7 @@ const HallSchema = new mongoose.Schema({
   state: { type: String, required: true },
   facilities: [String],
   description: { type: String, default: '' },
-  pricePerHour: { type: Number, required: true, min: 0 },
+  pricePerHour: { type: Number, default: 0 },
   image: { type: String, default: '' },
   images: [String],
   status: { type: String, enum: ['available', 'booked', 'maintenance'], default: 'available' },
