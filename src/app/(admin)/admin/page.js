@@ -51,6 +51,12 @@ const formatTime12h = (timeStr) => {
 };
 
   const getDetails = (b) => {
+    const resourceName = b.serviceType === 'vehicle' ? 
+      `🚗 ${b.serviceId?.name || 'Vehicle'} (${b.serviceId?.registrationNumber || 'N/A'})` :
+     b.serviceType === 'room' ? 
+      `🏨 ${b.serviceId?.name || 'Room'} #${b.serviceId?.roomNumber || 'N/A'}` :
+     `🏛️ ${b.serviceId?.name || 'Event Hall'}`;
+
     if (b.serviceType === 'room') {
       // For room bookings, show check-in and check-out clearly
       const checkInDate = b.roomCheckInDate ? format(new Date(b.roomCheckInDate), 'MMM d, yyyy') : '—';
@@ -60,7 +66,7 @@ const formatTime12h = (timeStr) => {
       const date = `Check-in: ${checkInDate}`;
       const time = `${checkInTime} → Check-out: ${checkOutTime}`;
       const info = b.roomPurpose || b.specialRequests || '';
-      return { date, time, info };
+      return { date, time, info, resourceName };
     }
     
     const rawDate = b.hallDate || b.vehiclePickupDate || b.roomCheckInDate || '';
@@ -69,7 +75,7 @@ const formatTime12h = (timeStr) => {
     const endTimeStr = b.hallEndTime || b.vehicleReturnTime || b.roomCheckOutTime || '';
     const time = startTimeStr && endTimeStr ? `${formatTime12h(startTimeStr)} – ${formatTime12h(endTimeStr)}` : '';
     const info = b.purpose || b.vehicleDetails?.description || b.roomPurpose || '';
-    return { date, time, info };
+    return { date, time, info, resourceName };
   };
 
   const STAT_CARDS = [
@@ -280,14 +286,15 @@ const formatTime12h = (timeStr) => {
                                 color: '#fff', fontWeight: 800, fontSize: 15,
                               }}>{b.user?.name?.[0]?.toUpperCase() || '?'}</div>
                               <div>
-                                <div style={{ fontWeight: 700, color: '#1a1a2e', fontSize: 14 }}>{b.user?.name || 'Unknown'}</div>
+                                <div style={{ fontWeight: 700, color: '#1a1a2e', fontSize: 14 }}>{b.user?.name || 'Unknown'}{(b.user?.department || b.department) ? ` (${b.user?.department || b.department})` : ''}</div>
                                 <div style={{ fontSize: 12, color: '#4b5563' }}>{b.user?.department || b.user?.role || 'User'}</div>
                               </div>
                             </div>
                           </td>
                           <td style={{ padding: '14px 18px' }}>
-                            <div style={{ fontWeight: 600, color: '#1a1a2e', fontSize: 14 }}>{d.date}</div>
-                            {d.time && <div style={{ fontSize: 12, color: '#4b5563', marginTop: 2 }}>{d.time}</div>}
+                            <div style={{ fontWeight: 700, color: '#1a1a2e', fontSize: 13, marginBottom: 4 }}>{d.resourceName}</div>
+                            <div style={{ fontWeight: 600, color: '#4b5563', fontSize: 13 }}>{d.date}</div>
+                            {d.time && <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{d.time}</div>}
                           </td>
                           <td style={{ padding: '14px 18px' }}>
                             <div style={{ fontSize: 13, color: '#4b5563', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.info || '—'}</div>

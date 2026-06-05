@@ -75,7 +75,7 @@ function BookForm() {
       .then(r => r.json())
       .then(d => {
         const hallBookings = (Array.isArray(d) ? d : []).filter(
-          b => b.serviceId === id && b.status === 'approved'
+          b => (b.serviceId?._id || b.serviceId) === id && b.status === 'approved'
         );
         setExistingBookings(hallBookings);
       });

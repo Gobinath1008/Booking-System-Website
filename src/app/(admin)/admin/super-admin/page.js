@@ -459,14 +459,14 @@ export default function SuperAdminDashboard() {
                     {bookings.slice(0, 50).map(booking => (
                       <tr key={booking._id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4">
-                          <div className="font-medium text-slate-900 text-sm">{booking.user?.name || booking.guestName}</div>
+                          <div className="font-medium text-slate-900 text-sm">{booking.user?.name || booking.guestName || 'Unknown'}{(booking.user?.department || booking.department) ? ` (${booking.user?.department || booking.department})` : ''}</div>
                           <div className="text-xs text-slate-500">{booking.user?.department || booking.user?.role || 'Guest'}</div>
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-xs font-medium text-slate-700 capitalize flex items-center gap-1.5">
-                            {booking.serviceType === 'hall' && '🏛️ Hall'}
-                            {booking.serviceType === 'vehicle' && '🚗 Vehicle'}
-                            {booking.serviceType === 'room' && '🏨 Room'}
+                            {booking.serviceType === 'hall' && `🏛️ ${booking.serviceId?.name || 'Hall'}`}
+                            {booking.serviceType === 'vehicle' && `🚗 ${booking.serviceId?.name || 'Vehicle'} (${booking.serviceId?.registrationNumber || 'N/A'})`}
+                            {booking.serviceType === 'room' && `🏨 ${booking.serviceId?.name || 'Room'} #${booking.serviceId?.roomNumber || 'N/A'}`}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-xs text-slate-600">

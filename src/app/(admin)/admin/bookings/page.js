@@ -236,7 +236,7 @@ function ManageBookingsContent() {
                     <div className={styles.userInfo}>
                       <div className={styles.avatar}>{b.user?.name?.[0]?.toUpperCase()}</div>
                       <div>
-                        <div className={styles.userName}>{b.user?.name}</div>
+                        <div className={styles.userName}>{b.user?.name || b.guestName || 'Unknown'}{(b.user?.department || b.department) ? ` (${b.user?.department || b.department})` : ''}</div>
                         <div className={styles.userMeta}>{b.user?.department || b.user?.role}</div>
                       </div>
                     </div>
@@ -304,7 +304,7 @@ function ManageBookingsContent() {
             </div>
             
             <div className={styles.summaryBox}>
-              <div className={styles.summaryRow}><span>User</span><strong>{selected.user?.name} ({selected.user?.role})</strong></div>
+              <div className={styles.summaryRow}><span>User</span><strong>{selected.user?.name || selected.guestName || 'Unknown'}{(selected.user?.department || selected.department) ? ` (${selected.user?.department || selected.department})` : ''} ({selected.user?.role || 'Guest'})</strong></div>
               <div className={styles.summaryRow}><span>Service</span><strong>{selected.serviceType === 'vehicle' ? '🚗 Vehicle' : selected.serviceType === 'room' ? '🏨 Room' : '🏛️ Hall'}</strong></div>
               <div className={styles.summaryRow}>
                 <span>Target</span>

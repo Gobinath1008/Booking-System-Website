@@ -69,7 +69,7 @@ function RoomDetailForm() {
       fetch('/api/auth/me')
     ]).then(async ([roomData, bookingsData, authRes]) => {
       setRoom(roomData);
-      setBookings(Array.isArray(bookingsData) ? bookingsData.filter(b => b.serviceId === id) : []);
+      setBookings(Array.isArray(bookingsData) ? bookingsData.filter(b => (b.serviceId?._id || b.serviceId) === id) : []);
       if (authRes.ok) {
         const u = await authRes.json();
         setUser(u);

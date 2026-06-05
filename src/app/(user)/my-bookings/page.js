@@ -243,7 +243,11 @@ const formatDateTime = (value) => {
                     <div className={styles.statusIcon}>{STATUS_ICONS[rtStatus]}</div>
                     <div className={styles.bookingInfo}>
                       <div className={styles.bookingHall}>
-                        {SERVICE_ICONS[b.serviceType]} {SERVICE_NAMES[b.serviceType]}
+                        {b.serviceType === 'vehicle' ? 
+                          `🚗 ${b.serviceId?.name || 'Vehicle'} (${b.serviceId?.registrationNumber || 'N/A'})` :
+                         b.serviceType === 'room' ? 
+                          `🏨 ${b.serviceId?.name || 'Room'} #${b.serviceId?.roomNumber || 'N/A'}` :
+                         `🏛️ ${b.serviceId?.name || 'Event Hall'}`}
                       </div>
                       <div className={styles.bookingMeta}>
                         📅 {details.date}
@@ -256,7 +260,7 @@ const formatDateTime = (value) => {
                       </div>
                       <div className={styles.bookingPurpose}>{details.description}</div>
                       <div style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '6px' }}>
-                        👤 <strong>{b.guestName || b.user?.name || 'Unknown'}</strong>
+                        👤 <strong>{b.guestName || b.user?.name || 'Unknown'}{(b.user?.department || b.department) ? ` (${b.user?.department || b.department})` : ''}</strong>
                         {(b.guestPhone || b.user?.phone) ? ` • 📞 ${b.guestPhone || b.user?.phone}` : ''}
                       </div>
                       {b.adminNote && (

@@ -99,7 +99,7 @@ export default function RoomBookingPage() {
   };
 
   const getRoomStatusDetails = (roomId) => {
-    const roomBookings = dateBookings.filter(b => b.serviceId === roomId && b.status !== 'rejected' && b.status !== 'cancelled');
+    const roomBookings = dateBookings.filter(b => (b.serviceId?._id || b.serviceId) === roomId && b.status !== 'rejected' && b.status !== 'cancelled');
     
     if (roomBookings.length === 0) {
       return { status: 'available', label: 'Available' };
@@ -249,7 +249,7 @@ export default function RoomBookingPage() {
                 const statusDetails = getRoomStatusDetails(room._id);
                 const status = statusDetails.status;
                 const statusLabel = statusDetails.label;
-                const roomBookings = dateBookings.filter(b => b.serviceId === room._id && b.status !== 'rejected' && b.status !== 'cancelled');
+                const roomBookings = dateBookings.filter(b => (b.serviceId?._id || b.serviceId) === room._id && b.status !== 'rejected' && b.status !== 'cancelled');
                 return (
                 <motion.div
                   key={room._id}
@@ -354,7 +354,7 @@ export default function RoomBookingPage() {
                             }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  👤 {b.user?.name || b.guestName || 'User'}
+                                  👤 {b.user?.name || b.guestName || 'User'}{(b.user?.department || b.department) ? ` (${b.user?.department || b.department})` : ''}
                                 </span>
                               </div>
                               <div style={{ fontSize: '12px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '2px' }}>

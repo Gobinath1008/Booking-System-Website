@@ -77,7 +77,7 @@ export default function HallBookingPage() {
   };
 
   const getHallStatusDetails = (hallId) => {
-    const hallBookings = dateBookings.filter(b => b.serviceId === hallId && b.status !== 'rejected' && b.status !== 'cancelled');
+    const hallBookings = dateBookings.filter(b => (b.serviceId?._id || b.serviceId) === hallId && b.status !== 'rejected' && b.status !== 'cancelled');
     
     if (hallBookings.length === 0) {
       return { status: 'available', label: 'Available' };
@@ -217,7 +217,7 @@ export default function HallBookingPage() {
                 const statusDetails = getHallStatusDetails(hall._id);
                 const status = statusDetails.status;
                 const statusLabel = statusDetails.label;
-                const hallBookings = dateBookings.filter(b => b.serviceId === hall._id && b.status !== 'rejected' && b.status !== 'cancelled');
+                const hallBookings = dateBookings.filter(b => (b.serviceId?._id || b.serviceId) === hall._id && b.status !== 'rejected' && b.status !== 'cancelled');
                 return (
                 <motion.div
                   key={hall._id}
@@ -323,7 +323,7 @@ export default function HallBookingPage() {
                             }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '600', color: '#1e293b', marginBottom: '2px' }}>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  👤 {b.user?.name || b.guestName || 'User'}
+                                  👤 {b.user?.name || b.guestName || 'User'}{(b.user?.department || b.department) ? ` (${b.user?.department || b.department})` : ''}
                                 </span>
                                 <span style={{ color: '#ef4444', fontSize: '12px', fontWeight: '700' }}>
                                   ⏰ {b.hallStartTime} - {b.hallEndTime}

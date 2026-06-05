@@ -68,7 +68,7 @@ function VehicleDetailForm() {
       fetch('/api/auth/me')
     ]).then(async ([vehicleData, bookingsData, authRes]) => {
       setVehicle(vehicleData);
-      setBookings(Array.isArray(bookingsData) ? bookingsData.filter(b => b.serviceId === id) : []);
+      setBookings(Array.isArray(bookingsData) ? bookingsData.filter(b => (b.serviceId?._id || b.serviceId) === id) : []);
       if (authRes.ok) {
         const u = await authRes.json();
         setUser(u);

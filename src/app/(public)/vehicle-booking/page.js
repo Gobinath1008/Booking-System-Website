@@ -96,7 +96,7 @@ export default function VehicleBookingPage() {
   };
 
   const getVehicleStatusDetails = (vehicleId) => {
-    const vehicleBookings = dateBookings.filter(b => b.serviceId === vehicleId && b.status !== 'rejected' && b.status !== 'cancelled');
+    const vehicleBookings = dateBookings.filter(b => (b.serviceId?._id || b.serviceId) === vehicleId && b.status !== 'rejected' && b.status !== 'cancelled');
     
     if (vehicleBookings.length === 0) {
       return { status: 'available', label: 'Available' };
@@ -246,7 +246,7 @@ export default function VehicleBookingPage() {
                 const statusDetails = getVehicleStatusDetails(vehicle._id);
                 const status = statusDetails.status;
                 const statusLabel = statusDetails.label;
-                const vehicleBookings = dateBookings.filter(b => b.serviceId === vehicle._id && b.status !== 'rejected' && b.status !== 'cancelled');
+                const vehicleBookings = dateBookings.filter(b => (b.serviceId?._id || b.serviceId) === vehicle._id && b.status !== 'rejected' && b.status !== 'cancelled');
                 return (
                 <motion.div
                   key={vehicle._id}
@@ -345,7 +345,7 @@ export default function VehicleBookingPage() {
                             }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  👤 {b.user?.name || b.guestName || 'User'}
+                                  👤 {b.user?.name || b.guestName || 'User'}{(b.user?.department || b.department) ? ` (${b.user?.department || b.department})` : ''}
                                 </span>
                               </div>
                               <div style={{ fontSize: '12px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '2px' }}>

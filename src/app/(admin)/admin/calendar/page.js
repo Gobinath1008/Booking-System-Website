@@ -396,7 +396,7 @@ export default function AdminCalendarPage() {
                               {b.hallDate || b.vehiclePickupDate || b.roomCheckInDate}
                             </td>
                             <td className="px-6 py-4 text-sm text-slate-800 font-bold">
-                              {b.guestName || b.user?.name || 'N/A'}
+                              {b.guestName || b.user?.name || 'N/A'}{(b.user?.department || b.department) ? ` (${b.user?.department || b.department})` : ''}
                             </td>
                             <td className="px-6 py-4">
                               <span

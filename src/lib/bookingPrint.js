@@ -109,7 +109,7 @@ export const buildBookingPrintHtml = (bookings, options = {}) => {
     const detailLines = [
       `<div>${details.location}</div>`,
       `<div>${details.description}</div>`,
-      `<div><strong>Booked by:</strong> ${escapeHtml(booking.guestName || booking.user?.name || 'Unknown')}</div>`,
+      `<div><strong>Booked by:</strong> ${escapeHtml(booking.guestName || booking.user?.name || 'Unknown')}${(booking.user?.department || booking.department) ? ` (${escapeHtml(booking.user?.department || booking.department)})` : ''}</div>`,
     ];
 
     const actionInfo = booking.actionBy?.name && status !== 'pending'

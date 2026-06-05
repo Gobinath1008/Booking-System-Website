@@ -75,9 +75,10 @@ export async function GET(request) {
 
   let halls = [], vehicles = [], rooms = [];
   const populateOpts = [
-    { path: 'user', select: 'name email phone' },
+    { path: 'user', select: 'name email phone department role' },
     { path: 'actionBy', select: 'name' }
   ];
+
 
   const isUser = !user || (user.role !== 'admin' && user.role !== 'super-admin');
 
@@ -293,6 +294,7 @@ export async function POST(request) {
       guestName: guestName || currentUser.name,
       guestEmail: guestEmail || currentUser.email,
       guestPhone: guestPhone || currentUser.phone,
+      department: currentUser.department || '',
     });
   } else if (serviceType === 'vehicle') {
     createdBooking = await VehicleBooking.create({
@@ -311,6 +313,7 @@ export async function POST(request) {
       guestName: guestName || currentUser.name,
       guestEmail: guestEmail || currentUser.email,
       guestPhone: guestPhone || currentUser.phone,
+      department: currentUser.department || '',
     });
   } else if (serviceType === 'room') {
     createdBooking = await RoomBooking.create({
@@ -326,9 +329,10 @@ export async function POST(request) {
       guestName: guestName || currentUser.name,
       guestEmail: guestEmail || currentUser.email,
       guestPhone: guestPhone || currentUser.phone,
+      department: currentUser.department || '',
     });
   }
 
-  const populated = await createdBooking.populate('user', 'name email phone');
+  const populated = await createdBooking.populate('user', 'name email phone department role');
   return NextResponse.json(populated, { status: 201 });
 }

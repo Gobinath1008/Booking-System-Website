@@ -743,7 +743,7 @@ export default function SmartCalendar({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gray-50 p-4 rounded-xl">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Booked By</p>
-                  <p className="font-semibold text-gray-800">{selectedEvent.guestName || selectedEvent.user?.name || 'Unknown'}</p>
+                  <p className="font-semibold text-gray-800">{selectedEvent.guestName || selectedEvent.user?.name || 'Unknown'}{(selectedEvent.user?.department || selectedEvent.department) ? ` (${selectedEvent.user?.department || selectedEvent.department})` : ''}</p>
                   <p className="text-sm text-gray-600">📞 {selectedEvent.guestPhone || 'N/A'}</p>
                 </div>
 
