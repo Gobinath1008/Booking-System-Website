@@ -6,6 +6,16 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import styles from '@/app/(user)/book/[id]/booking.module.css';
 
+const TIME_SLOTS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
+
+const formatTime12h = (timeStr) => {
+  if (!timeStr) return '';
+  const [hourStr, minStr] = timeStr.split(':');
+  const hour = parseInt(hourStr);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${String(hour12).padStart(2, '0')}:${minStr} ${ampm}`;
+};
 
 function RoomDetailForm() {
   const router = useRouter();
@@ -18,9 +28,13 @@ function RoomDetailForm() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
-    checkIn: dateParam, checkOut: dateParam, checkInTime: '14:00', checkOutTime: '12:00',
-    guests: 1, purpose: ''
+    date: dateParam,
+    startTime: '',
+    endTime: '',
+    guests: 1,
+    purpose: ''
   });
+  const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
@@ -28,37 +42,14 @@ function RoomDetailForm() {
   // Get today's date and current time
   const now = new Date();
   const today = now.toISOString().split('T')[0];
-  const currentTimeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
-  // Calculate minimum check-in time for today
-  const getMinCheckInTime = (selectedDate) => {
-    if (selectedDate === today) {
-      // For today, set minimum time to current time (rounded up to next 30 minutes)
-      const minutes = now.getMinutes();
-      const hour = now.getHours();
-      let minTime;
-      if (minutes === 0) {
-        minTime = `${String(hour).padStart(2, '0')}:00`;
-      } else if (minutes <= 30) {
-        minTime = `${String(hour).padStart(2, '0')}:30`;
-      } else {
-        minTime = `${String(hour + 1).padStart(2, '0')}:00`;
-      }
-      return minTime;
-    }
-    return '00:00';
-  };
-
-  const getMinCheckOutTime = (checkInDate, checkInTime) => {
-    if (checkInDate === today && checkInTime) {
-      const [h, m] = checkInTime.split(':').map(Number);
-      // Check-out must be at least 1 hour after check-in (and not in the past)
-      const checkOutDateTime = new Date();
-      checkOutDateTime.setHours(h, m, 0, 0);
-      checkOutDateTime.setHours(checkOutDateTime.getHours() + 1);
-      return String(checkOutDateTime.getHours()).padStart(2, '0') + ':' + String(checkOutDateTime.getMinutes()).padStart(2, '0');
-    }
-    return checkInTime ? checkInTime : '12:00';
+  // Check if a time slot is in the past
+  const isTimeSlotInPast = (timeSlot) => {
+    if (form.date !== today) return false;
+    const [h, m] = timeSlot.split(':').map(Number);
+    const slotMinutes = h * 60 + m;
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    return slotMinutes <= currentMinutes;
   };
 
   useEffect(() => {
@@ -68,7 +59,7 @@ function RoomDetailForm() {
       fetch('/api/auth/me')
     ]).then(async ([roomData, bookingsData, authRes]) => {
       setRoom(roomData);
-      setBookings(Array.isArray(bookingsData) ? bookingsData.filter(b => (b.serviceId?._id || b.serviceId) === id) : []);
+      setBookings(Array.isArray(bookingsData) ? bookingsData.filter(b => (b.serviceId?._id || b.serviceId) === id && b.status === 'approved') : []);
       if (authRes.ok) {
         const u = await authRes.json();
         setUser(u);
@@ -77,8 +68,46 @@ function RoomDetailForm() {
     });
   }, [id]);
 
+  const handleDateChange = (newDate) => {
+    setForm(f => ({ ...f, date: newDate, startTime: '', endTime: '' }));
+    setErrors(e => ({ ...e, date: '', startTime: '', endTime: '' }));
+  };
+
+  const isStartTimeBooked = (t) => {
+    return bookings.some(b => b.roomCheckInDate === form.date && t >= b.roomCheckInTime && t < b.roomCheckOutTime);
+  };
+
+  const isEndTimeDisabled = (t) => {
+    if (!form.startTime) {
+      return bookings.some(b => b.roomCheckInDate === form.date && t > b.roomCheckInTime && t <= b.roomCheckOutTime);
+    }
+    if (t <= form.startTime) return true;
+    
+    // Check if the end time itself falls inside a booked range
+    if (bookings.some(b => b.roomCheckInDate === form.date && t > b.roomCheckInTime && t <= b.roomCheckOutTime)) return true;
+
+    // Check if selecting this end time would overlap with an existing booking that starts after our selected start time
+    if (bookings.some(b => b.roomCheckInDate === form.date && b.roomCheckInTime >= form.startTime && t > b.roomCheckInTime)) return true;
+
+    // Check if end time is in the past
+    if (form.date === today && isTimeSlotInPast(t)) return true;
+
+    return false;
+  };
+
+  const validate = () => {
+    const errs = {};
+    if (!form.date) errs.date = 'Please select a date';
+    if (!form.startTime) errs.startTime = 'Please select check-in time';
+    if (!form.endTime) errs.endTime = 'Please select check-out time';
+    if (form.startTime && form.endTime && form.startTime >= form.endTime) errs.endTime = 'Check-out time must be after check-in time';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
     setSubmitting(true); setError('');
     try {
       const res = await fetch('/api/bookings', {
@@ -87,17 +116,18 @@ function RoomDetailForm() {
         body: JSON.stringify({
           serviceType: 'room',
           serviceId: id,
-          roomCheckInDate: form.checkIn,
-          roomCheckOutDate: form.checkOut,
-          roomCheckInTime: form.checkInTime,
-          roomCheckOutTime: form.checkOutTime,
+          roomCheckInDate: form.date,
+          roomCheckOutDate: form.date,
+          roomCheckInTime: form.startTime,
+          roomCheckOutTime: form.endTime,
           numberOfGuests: form.guests,
           roomPurpose: form.purpose
         }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.message); return; }
-      router.push('/my-bookings');
+      setMsg('✅ Booking submitted successfully!');
+      setTimeout(() => router.push('/my-bookings'), 2000);
     } catch { setError('Something went wrong'); }
     finally { setSubmitting(false); }
   };
@@ -128,34 +158,54 @@ function RoomDetailForm() {
 
             {user ? (
               <form onSubmit={handleSubmit}>
+                {/* Date */}
                 <div className={styles.section}>
-                  <h2 className={styles.sectionTitle}>📅 Check-in Date & Time</h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    <input type="date" className="form-input" required
-                      min={today}
-                      value={form.checkIn} onChange={e => setForm({...form, checkIn: e.target.value})} />
-                    <input type="time" className="form-input" required
-                      min={getMinCheckInTime(form.checkIn)}
-                      value={form.checkInTime} onChange={e => setForm({...form, checkInTime: e.target.value})} />
+                  <h2 className={styles.sectionTitle}>📅 Date</h2>
+                  <input type="date" className={`form-input ${errors.date ? 'error' : ''}`}
+                    min={today} value={form.date} onChange={e => handleDateChange(e.target.value)} required />
+                  {errors.date && <div className="error-msg">{errors.date}</div>}
+                </div>
+
+                {/* Time slots */}
+                <div className={styles.section}>
+                  <h2 className={styles.sectionTitle}>🕐 Check-in Time</h2>
+                  <div className={styles.timeSlots}>
+                    {TIME_SLOTS.slice(0, -1).map(t => {
+                      const booked = isStartTimeBooked(t);
+                      const isPast = isTimeSlotInPast(t);
+                      return (
+                        <button key={t} type="button"
+                          className={`${styles.timeSlot} ${form.startTime === t ? styles.slotActive : ''} ${booked || isPast ? styles.slotDisabled : ''}`}
+                          onClick={() => !booked && !isPast && setForm(f => ({ ...f, startTime: t }))}
+                          disabled={booked || isPast}
+                          title={isPast ? 'This time has passed' : booked ? 'Already booked' : ''}
+                        >{formatTime12h(t)}</button>
+                      );
+                    })}
                   </div>
+                  {errors.startTime && <div className="error-msg">{errors.startTime}</div>}
                 </div>
 
                 <div className={styles.section}>
-                  <h2 className={styles.sectionTitle}>📅 Check-out Date & Time</h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    <input type="date" className="form-input" required
-                      min={form.checkIn}
-                      value={form.checkOut} onChange={e => setForm({...form, checkOut: e.target.value})} />
-                    <input type="time" className="form-input" required
-                      min={form.checkOut === today ? currentTimeStr : '00:00'}
-                      value={form.checkOutTime} onChange={e => setForm({...form, checkOutTime: e.target.value})} />
+                  <h2 className={styles.sectionTitle}>🕕 Check-out Time</h2>
+                  <div className={styles.timeSlots}>
+                    {TIME_SLOTS.slice(1).map(t => {
+                      const disabled = isEndTimeDisabled(t);
+                      return (
+                        <button key={t} type="button"
+                          className={`${styles.timeSlot} ${form.endTime === t ? styles.slotActive : ''} ${disabled ? styles.slotDisabled : ''}`}
+                          onClick={() => !disabled && setForm(f => ({ ...f, endTime: t }))}
+                          disabled={disabled}>{formatTime12h(t)}</button>
+                      );
+                    })}
                   </div>
+                  {errors.endTime && <div className="error-msg">{errors.endTime}</div>}
                 </div>
 
                 <div className={styles.section}>
                   <h2 className={styles.sectionTitle}>👥 Expected Guests</h2>
                   <input type="number" className="form-input" min="1" max={room?.occupancy} required
-                    value={form.guests} onChange={e => setForm({...form, guests: parseInt(e.target.value)})} style={{ maxWidth: 200 }} />
+                    value={form.guests} onChange={e => setForm({...form, guests: parseInt(e.target.value) || 1})} style={{ maxWidth: 200 }} />
                 </div>
 
                 <div className={styles.section}>
@@ -184,10 +234,9 @@ function RoomDetailForm() {
                 <div className={styles.summaryRow}><span>Room</span><strong>{room?.roomNumber ? `Room ${room.roomNumber}` : '—'}</strong></div>
                 <div className={styles.summaryRow}><span>Hostel</span><strong>Boys Hostel</strong></div>
                 <div className={styles.summaryRow}><span>AC Type</span><strong>{room?.ac ? 'AC' : 'Non-AC'}</strong></div>
-                <div className={styles.summaryRow}><span>Check-in Date</span><strong>{form.checkIn || '—'}</strong></div>
-                <div className={styles.summaryRow}><span>Check-in Time</span><strong>{form.checkInTime || '—'}</strong></div>
-                <div className={styles.summaryRow}><span>Check-out Date</span><strong>{form.checkOut || '—'}</strong></div>
-                <div className={styles.summaryRow}><span>Check-out Time</span><strong>{form.checkOutTime || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Date</span><strong>{form.date || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Check-in Time</span><strong>{formatTime12h(form.startTime) || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Check-out Time</span><strong>{formatTime12h(form.endTime) || '—'}</strong></div>
                 <div className={styles.summaryRow}><span>Guests</span><strong>{form.guests}</strong></div>
               </div>
               <div className={styles.summaryNote}>
