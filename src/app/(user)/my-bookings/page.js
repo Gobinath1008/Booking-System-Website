@@ -135,7 +135,7 @@ const formatDateTime = (value) => {
           date: `${booking.vehiclePickupDate} to ${booking.vehicleReturnDate}`,
           time: `${formatTime12h(booking.vehiclePickupTime || '09:00')} - ${formatTime12h(booking.vehicleReturnTime || '09:00')}`,
           location,
-          description: `${driverText}${routeInfo}`
+          description: `${driverText}${routeInfo}${booking.serviceId?.driverMobile ? ` | 📞 Driver Contact: ${booking.serviceId.driverMobile}` : ''}`
         };
       }
       case 'room':
@@ -246,7 +246,7 @@ const formatDateTime = (value) => {
                         {b.serviceType === 'vehicle' ? 
                           `🚗 ${b.serviceId?.name || 'Vehicle'} (${b.serviceId?.registrationNumber || 'N/A'})` :
                          b.serviceType === 'room' ? 
-                          `🏨 ${b.serviceId?.name || 'Room'} #${b.serviceId?.roomNumber || 'N/A'}` :
+                          `🏨 Room ${b.serviceId?.roomNumber || 'N/A'}` :
                          `🏛️ ${b.serviceId?.name || 'Event Hall'}`}
                       </div>
                       <div className={styles.bookingMeta}>

@@ -274,7 +274,9 @@ export default function VehicleBookingPage() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
                       <div>
                         <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>{vehicle.name}</h3>
-                        <p style={{ fontSize: '14px', color: '#6b7280' }}>{vehicle.model} • {vehicle.year}</p>
+                        {vehicle.driverMobile && (
+                          <p style={{ fontSize: '14px', color: '#6b7280' }}>📞 Driver: {vehicle.driverMobile}</p>
+                        )}
                       </div>
                       <span className={`badge`} style={{
                         background: status === 'available' ? '#dcfce7' : status === 'partially-booked' ? '#fef08a' : '#fee2e2',
@@ -287,7 +289,6 @@ export default function VehicleBookingPage() {
 
                     <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', fontSize: '13px', color: '#6b7280' }}>
                       <span>👥 {vehicle.capacity} seats</span>
-                      <span>{FUEL_TYPES[vehicle.fuelType]}</span>
                     </div>
 
                     {vehicle.features?.length > 0 && (

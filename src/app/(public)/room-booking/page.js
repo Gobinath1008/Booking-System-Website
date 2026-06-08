@@ -38,7 +38,6 @@ export default function RoomBookingPage() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
   const [cityFilter, setCityFilter] = useState('');
   const [occupancyFilter, setOccupancyFilter] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -46,7 +45,7 @@ export default function RoomBookingPage() {
   const [dateBookings, setDateBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [hostelTab, setHostelTab] = useState('boys');
+  const [acFilter, setAcFilter] = useState('all');
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -59,10 +58,11 @@ export default function RoomBookingPage() {
     setLoading(true);
     const params = new URLSearchParams();
     if (search.trim()) params.set('search', search.trim());
-    if (typeFilter) params.set('roomType', typeFilter);
     if (cityFilter.trim()) params.set('city', cityFilter.trim());
     if (occupancyFilter) params.set('occupancy', occupancyFilter);
-    params.set('hostelType', hostelTab);
+    params.set('hostelType', 'boys');
+    if (acFilter === 'ac') params.set('ac', 'true');
+    if (acFilter === 'non-ac') params.set('ac', 'false');
     try {
       const res = await fetch(`/api/rooms?${params}`);
       const data = await res.json();
@@ -72,7 +72,7 @@ export default function RoomBookingPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, typeFilter, cityFilter, occupancyFilter, hostelTab]);
+  }, [search, cityFilter, occupancyFilter, acFilter]);
 
   useEffect(() => {
     const t = setTimeout(fetchRooms, 350);
@@ -173,81 +173,40 @@ export default function RoomBookingPage() {
         <p style={{ color: '#6b7280' }}>Reserve comfortable rooms for your stay</p>
       </motion.div>
 
-      {/* Hostel Selection Tabs */}
-      <div style={{
-        display: 'flex',
-        gap: '16px',
-        marginBottom: '32px',
-        background: '#f1f5f9',
-        padding: '6px',
-        borderRadius: '16px',
-        border: '1px solid #e2e8f0',
-        maxWidth: '500px'
-      }}>
-        <button
-          onClick={() => setHostelTab('boys')}
-          style={{
-            flex: 1,
-            padding: '12px 20px',
-            borderRadius: '12px',
-            fontSize: '15px',
-            fontWeight: '700',
-            border: 'none',
-            background: hostelTab === 'boys' ? '#6C63FF' : 'transparent',
-            color: hostelTab === 'boys' ? '#ffffff' : '#475569',
-            boxShadow: hostelTab === 'boys' ? '0 4px 12px rgba(108, 99, 255, 0.25)' : 'none',
-            cursor: 'pointer',
-            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
-          }}
-        >
-          👦 Boys Hostel
-        </button>
-        <button
-          onClick={() => setHostelTab('girls')}
-          style={{
-            flex: 1,
-            padding: '12px 20px',
-            borderRadius: '12px',
-            fontSize: '15px',
-            fontWeight: '700',
-            border: 'none',
-            background: hostelTab === 'girls' ? '#6C63FF' : 'transparent',
-            color: hostelTab === 'girls' ? '#ffffff' : '#475569',
-            boxShadow: hostelTab === 'girls' ? '0 4px 12px rgba(108, 99, 255, 0.25)' : 'none',
-            cursor: 'pointer',
-            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
-          }}
-        >
-          👧 Girls Hostel
-        </button>
-      </div>
-
       {/* Search and Filters */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         style={{ marginBottom: '24px' }}
       >
-        <div style={{ position: 'relative' }}>
-          <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px' }}>🔍</span>
-          <input
-            type="text"
-            placeholder="Search rooms by name, type..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: '280px' }}>
+            <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px' }}>🔍</span>
+            <input
+              type="text"
+              placeholder="Search rooms by room number..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{
+                width: '100%', padding: '14px 14px 14px 48px', borderRadius: '12px',
+                border: '1px solid #e5e7eb', fontSize: '15px', background: '#fff',
+                outline: 'none'
+              }}
+            />
+          </div>
+          <select
+            value={acFilter}
+            onChange={(e) => setAcFilter(e.target.value)}
             style={{
-              width: '100%', padding: '14px 14px 14px 48px', borderRadius: '12px',
-              border: '1px solid #e5e7eb', fontSize: '15px', background: '#fff'
+              padding: '14px 20px', borderRadius: '12px',
+              border: '1px solid #e5e7eb', fontSize: '15px', background: '#fff',
+              minWidth: '180px', cursor: 'pointer', outline: 'none'
             }}
-          />
+          >
+            <option value="all">All Rooms</option>
+            <option value="ac">AC Rooms</option>
+            <option value="non-ac">Non-AC Rooms</option>
+          </select>
         </div>
       </motion.div>
 
@@ -327,16 +286,16 @@ export default function RoomBookingPage() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px',
                     position: 'relative'
                   }}>
-                    <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg, ${ROOM_TYPE_COLORS[room.roomType]}cc, rgba(0,0,0,0.3))` }} />
-                    <span style={{ position: 'relative', zIndex: 1 }}>{TYPE_ICONS[room.roomType] || '🛏️'}</span>
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #2563ebcc, rgba(0,0,0,0.3))' }} />
+                    <span style={{ position: 'relative', zIndex: 1 }}>🛏️</span>
                   </div>
 
                   {/* Room Details */}
                   <div style={{ padding: '20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
                       <div>
-                        <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>{room.name}</h3>
-                        <p style={{ fontSize: '14px', color: '#6b7280' }}>Room {room.roomNumber} • Floor {room.floor}</p>
+                        <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>Room {room.roomNumber}</h3>
+                        <p style={{ fontSize: '14px', color: '#6b7280' }}>Floor {room.floor}</p>
                       </div>
                       <span className={`badge`} style={{
                         background: status === 'available' ? '#dcfce7' : status === 'partially-booked' ? '#fef08a' : '#fee2e2',
@@ -351,18 +310,20 @@ export default function RoomBookingPage() {
                       <span style={{
                         display: 'inline-flex', alignItems: 'center', gap: '4px',
                         padding: '4px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: '600',
-                        background: `${ROOM_TYPE_COLORS[room.roomType]}20`, color: ROOM_TYPE_COLORS[room.roomType]
+                        background: '#eff6ff',
+                        color: '#2563eb',
+                        border: '1px solid #bfdbfe'
                       }}>
-                        {room.roomType.toUpperCase()}
+                        Boys Hostel
                       </span>
                       <span style={{
                         display: 'inline-flex', alignItems: 'center', gap: '4px',
                         padding: '4px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: '600',
-                        background: room.hostelType === 'girls' ? '#fdf2f8' : '#eff6ff',
-                        color: room.hostelType === 'girls' ? '#db2777' : '#2563eb',
-                        border: `1px solid ${room.hostelType === 'girls' ? '#fbcfe8' : '#bfdbfe'}`
+                        background: room.ac ? '#e0f2fe' : '#f1f5f9',
+                        color: room.ac ? '#0369a1' : '#475569',
+                        border: `1px solid ${room.ac ? '#bae6fd' : '#cbd5e1'}`
                       }}>
-                        {room.hostelType === 'girls' ? 'Girls' : 'Boys'} Hostel
+                        {room.ac ? '❄️ AC' : '💨 Non-AC'}
                       </span>
                       <span style={{ fontSize: '13px', color: '#6b7280' }}>👥 {room.occupancy} guests max</span>
                     </div>

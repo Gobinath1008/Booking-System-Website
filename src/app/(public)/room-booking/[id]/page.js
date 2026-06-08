@@ -6,7 +6,6 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import styles from '@/app/(user)/book/[id]/booking.module.css';
 
-const TYPE_ICONS = { economy: '🛏️', standard: '🛏️', deluxe: '✨', family: '👨‍👩‍👧‍👦', suite: '👑' };
 
 function RoomDetailForm() {
   const router = useRouter();
@@ -116,10 +115,10 @@ function RoomDetailForm() {
             <div className={styles.formHeader}>
               <h1 className={styles.formTitle}>Book a Room</h1>
               <div className={styles.hallBadge}>
-                <span>{TYPE_ICONS[room.roomType] || '🛏️'}</span>
+                <span>🛏️</span>
                 <div>
-                  <div className={styles.hallBadgeName}>{room?.name}</div>
-                  <div className={styles.hallBadgeCap}>Occupancy: {room?.occupancy} guests • {room?.location}</div>
+                  <div className={styles.hallBadgeName}>Room {room?.roomNumber}</div>
+                  <div className={styles.hallBadgeCap}>Occupancy: {room?.occupancy} guests • {room?.ac ? 'AC' : 'Non-AC'} • {room?.location}</div>
                 </div>
               </div>
             </div>
@@ -182,8 +181,9 @@ function RoomDetailForm() {
             <div className={styles.summaryCard}>
               <h3 className={styles.summaryTitle}>📋 Booking Summary</h3>
               <div className={styles.summaryRows}>
-                <div className={styles.summaryRow}><span>Room</span><strong>{room?.name || '—'}</strong></div>
-                <div className={styles.summaryRow}><span>Type</span><strong>{room?.roomType || '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Room</span><strong>{room?.roomNumber ? `Room ${room.roomNumber}` : '—'}</strong></div>
+                <div className={styles.summaryRow}><span>Hostel</span><strong>Boys Hostel</strong></div>
+                <div className={styles.summaryRow}><span>AC Type</span><strong>{room?.ac ? 'AC' : 'Non-AC'}</strong></div>
                 <div className={styles.summaryRow}><span>Check-in Date</span><strong>{form.checkIn || '—'}</strong></div>
                 <div className={styles.summaryRow}><span>Check-in Time</span><strong>{form.checkInTime || '—'}</strong></div>
                 <div className={styles.summaryRow}><span>Check-out Date</span><strong>{form.checkOut || '—'}</strong></div>

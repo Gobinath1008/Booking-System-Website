@@ -12,7 +12,7 @@ const VehicleBookingSchema = new mongoose.Schema({
   pickupLocation: String,
   returnLocation: String,
   purpose: String,
-  withDriver: { type: Boolean, default: false },
+  withDriver: { type: Boolean, default: true },
   fuelOption: { type: String, enum: ['empty', 'full'], default: 'empty' },
   mileage: Number,
 

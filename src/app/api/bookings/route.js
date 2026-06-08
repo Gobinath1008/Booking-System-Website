@@ -101,10 +101,10 @@ export async function GET(request) {
     halls = await HallBooking.find(query).populate([...populateOpts, { path: 'serviceId', select: 'name' }]).sort({ createdAt: -1 });
   }
   if ((!serviceType || serviceType === 'vehicle') && showVehicles) {
-    vehicles = await VehicleBooking.find(query).populate([...populateOpts, { path: 'serviceId', select: 'name registrationNumber capacity' }]).sort({ createdAt: -1 });
+    vehicles = await VehicleBooking.find(query).populate([...populateOpts, { path: 'serviceId', select: 'name registrationNumber capacity driverMobile' }]).sort({ createdAt: -1 });
   }
   if ((!serviceType || serviceType === 'room') && showRooms) {
-    rooms = await RoomBooking.find(query).select('+specialRequests').populate([...populateOpts, { path: 'serviceId', select: 'name roomNumber' }]).sort({ createdAt: -1 });
+    rooms = await RoomBooking.find(query).select('+specialRequests').populate([...populateOpts, { path: 'serviceId', select: 'roomNumber floor' }]).sort({ createdAt: -1 });
   }
 
   const combined = [...halls, ...vehicles, ...rooms].sort((a, b) => b.createdAt - a.createdAt);

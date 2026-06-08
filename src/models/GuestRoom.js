@@ -1,8 +1,6 @@
 import mongoose from 'mongoose';
 
 const GuestRoomSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  roomType: { type: String, enum: ['economy', 'standard', 'deluxe', 'family', 'suite'], required: true },
   roomNumber: { type: String, required: true, unique: true, trim: true },
   floor: { type: Number, required: true },
   occupancy: { type: Number, required: true, min: 1 },
@@ -20,10 +18,8 @@ const GuestRoomSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
   hostelType: { type: String, enum: ['boys', 'girls'], required: true, default: 'boys' },
   location: { type: String, required: true },
-  address: { type: String, required: true },
   city: { type: String, required: true },
   state: { type: String, required: true },
-  zipCode: { type: String, required: true },
   features: [String],
   wifi: { type: Boolean, default: true },
   ac: { type: Boolean, default: true },
@@ -37,4 +33,9 @@ const GuestRoomSchema = new mongoose.Schema({
   checkOutDate: Date,
 }, { timestamps: true });
 
-export default mongoose.models.GuestRoom || mongoose.model('GuestRoom', GuestRoomSchema);
+// Safe Mongoose hot-reloading
+if (mongoose.models.GuestRoom) {
+  delete mongoose.models.GuestRoom;
+}
+
+export default mongoose.model('GuestRoom', GuestRoomSchema);

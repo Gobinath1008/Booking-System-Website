@@ -7,14 +7,11 @@ const EMPTY_FORM = {
   name: '',
   vehicleType: 'car',
   registrationNumber: '',
-  model: '',
-  year: new Date().getFullYear(),
+  driverMobile: '',
   capacity: 5,
-  fuelType: 'petrol',
   location: '',
   city: '',
   state: '',
-  address: '',
   status: 'available',
   isActive: true
 };
@@ -60,14 +57,11 @@ export default function VehiclesPage() {
       name: vehicle.name || '',
       vehicleType: vehicle.vehicleType || 'car',
       registrationNumber: vehicle.registrationNumber || '',
-      model: vehicle.model || '',
-      year: vehicle.year || new Date().getFullYear(),
+      driverMobile: vehicle.driverMobile || '',
       capacity: vehicle.capacity || 5,
-      fuelType: vehicle.fuelType || 'petrol',
       location: vehicle.location || '',
       city: vehicle.city || '',
       state: vehicle.state || '',
-      address: vehicle.address || '',
       status: vehicle.status || 'available',
       isActive: vehicle.isActive !== false
     });
@@ -210,25 +204,13 @@ export default function VehiclesPage() {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Model</label>
+                  <label className="form-label">Driver Mobile Number</label>
                   <input
                     type="text"
                     className="form-input"
-                    placeholder="e.g. SUV"
-                    value={formData.model}
-                    onChange={(e) => setFormData({...formData, model: e.target.value})}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Year</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    placeholder="Year"
-                    value={formData.year}
-                    onChange={(e) => setFormData({...formData, year: parseInt(e.target.value) || new Date().getFullYear()})}
-                    required
+                    placeholder="e.g. 9876543210"
+                    value={formData.driverMobile}
+                    onChange={(e) => setFormData({...formData, driverMobile: e.target.value})}
                   />
                 </div>
                 <div className="form-group">
@@ -242,19 +224,6 @@ export default function VehiclesPage() {
                     min="1"
                     required
                   />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Fuel Type</label>
-                  <select
-                    className="form-input"
-                    value={formData.fuelType}
-                    onChange={(e) => setFormData({...formData, fuelType: e.target.value})}
-                  >
-                    <option value="petrol">Petrol</option>
-                    <option value="diesel">Diesel</option>
-                    <option value="electric">Electric</option>
-                    <option value="hybrid">Hybrid</option>
-                  </select>
                 </div>
 
                 <div className="form-group">
@@ -303,17 +272,7 @@ export default function VehiclesPage() {
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Address</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="Address"
-                    value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    required
-                  />
-                </div>
+
                 <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', gridColumn: 'span 2' }}>
                   <input
                     type="checkbox"
@@ -368,13 +327,13 @@ export default function VehiclesPage() {
                       )}
                     </h3>
                     <p style={{ color: '#666', fontSize: '14px' }}>
-                      {vehicle.vehicleType.toUpperCase()} • {vehicle.model} ({vehicle.year})
+                      {vehicle.vehicleType.toUpperCase()}
                     </p>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, margin: '8px 0', fontSize: '13px', color: '#4b5563' }}>
                       <div>📝 Reg: {vehicle.registrationNumber}</div>
                       <div>👥 Capacity: {vehicle.capacity} seats</div>
-                      <div>⛽ {vehicle.fuelType}</div>
+                      {vehicle.driverMobile && <div>📞 Driver: {vehicle.driverMobile}</div>}
                       <div>📍 {vehicle.location}</div>
                       <div style={{ color: '#999', fontSize: '12px' }}>{vehicle.city}, {vehicle.state}</div>
                     </div>

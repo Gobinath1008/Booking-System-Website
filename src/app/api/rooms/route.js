@@ -9,10 +9,10 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
   const search = searchParams.get('search');
-  const roomType = searchParams.get('roomType');
   const city = searchParams.get('city');
   const occupancy = searchParams.get('occupancy');
   const hostelType = searchParams.get('hostelType');
+  const ac = searchParams.get('ac');
   const all = searchParams.get('all');
 
   // If id provided, return single room
@@ -36,13 +36,12 @@ export async function GET(request) {
 
   if (search) {
     query.$or = [
-      { name: { $regex: search, $options: 'i' } },
       { roomNumber: { $regex: search, $options: 'i' } },
-      { roomType: { $regex: search, $options: 'i' } },
     ];
   }
-  if (roomType) query.roomType = roomType;
   if (hostelType) query.hostelType = hostelType;
+  if (ac === 'true') query.ac = true;
+  if (ac === 'false') query.ac = false;
   if (city) query.city = { $regex: city, $options: 'i' };
   if (occupancy) query.occupancy = { $gte: parseInt(occupancy) };
 
@@ -56,9 +55,10 @@ export async function POST(request) {
   
   await connectDB();
   const body = await request.json();
-  const { name, roomType, roomNumber, floor, occupancy, location, city, state, address, zipCode, hostelType } = body;
+  let { roomNumber, floor, occupancy, location, city, state, hostelType, ac } = body;
+  if (!hostelType) hostelType = 'boys';
 
-  if (!name || !roomType || !roomNumber || floor === undefined || occupancy === undefined || !location || !hostelType) {
+  if (!roomNumber || floor === undefined || occupancy === undefined || !location || !hostelType) {
     return NextResponse.json({ message: 'Required fields are missing' }, { status: 400 });
   }
 
@@ -68,17 +68,14 @@ export async function POST(request) {
   }
 
   const room = await GuestRoom.create({
-    name,
-    roomType,
     roomNumber,
     floor,
     occupancy,
     location,
     city,
     state,
-    address,
-    zipCode,
     hostelType,
+    ac: ac !== undefined ? ac : true,
   });
 
   return NextResponse.json(room, { status: 201 });

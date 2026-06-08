@@ -20,7 +20,7 @@ function VehicleDetailForm() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     pickupDate: dateParam, returnDate: dateParam, pickupTime: '09:00', returnTime: '09:00',
-    pickupLocation: '', returnLocation: '', withDriver: false, purpose: ''
+    pickupLocation: '', returnLocation: '', withDriver: true, purpose: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
@@ -164,13 +164,7 @@ function VehicleDetailForm() {
                   </div>
                 </div>
 
-                <div className={styles.section}>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="driver" checked={form.withDriver}
-                      onChange={e => setForm({...form, withDriver: e.target.checked})} />
-                    <label htmlFor="driver" className="font-medium text-gray-700">Include Driver</label>
-                  </div>
-                </div>
+                {/* Driver is included by default */}
 
                 <div className={styles.section}>
                   <h2 className={styles.sectionTitle}>📋 Purpose</h2>

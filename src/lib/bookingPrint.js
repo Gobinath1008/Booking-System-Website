@@ -79,7 +79,7 @@ const getBookingDetails = (booking, serviceDetails = {}) => {
         dateHtml: `<div><strong>Pickup:</strong> ${escapeHtml(booking.vehiclePickupDate)} ${escapeHtml(formatTime12h(booking.vehiclePickupTime || '09:00'))}</div><div><strong>Return:</strong> ${escapeHtml(booking.vehicleReturnDate)} ${escapeHtml(formatTime12h(booking.vehicleReturnTime || '09:00'))}</div>`,
         time: '',
         location: `🚗 ${escapeHtml(vehicle?.name || 'Vehicle')} (${escapeHtml(vehicle?.registrationNumber || 'N/A')})`,
-        description: `<div>${escapeHtml(driverText)}${routeInfo}</div>${booking.purpose ? `<div><strong>Purpose:</strong> ${escapeHtml(booking.purpose)}</div>` : ''}`,
+        description: `<div>${escapeHtml(driverText)}${routeInfo}${vehicle?.driverMobile ? ` | 📞 Driver: ${escapeHtml(vehicle.driverMobile)}` : ''}</div>${booking.purpose ? `<div><strong>Purpose:</strong> ${escapeHtml(booking.purpose)}</div>` : ''}`,
       };
     }
     case 'room': {
@@ -87,7 +87,7 @@ const getBookingDetails = (booking, serviceDetails = {}) => {
       return {
         dateHtml: `<div><strong>Check-in:</strong> ${escapeHtml(booking.roomCheckInDate)} ${escapeHtml(formatTime12h(booking.roomCheckInTime || '14:00'))}</div><div><strong>Check-out:</strong> ${escapeHtml(booking.roomCheckOutDate)} ${escapeHtml(formatTime12h(booking.roomCheckOutTime || '12:00'))}</div>`,
         time: '',
-        location: `🏨 ${escapeHtml(room?.name || 'Room')} #${escapeHtml(room?.roomNumber || 'N/A')}${room?.floor !== undefined && room?.floor !== null ? ` (Floor ${escapeHtml(String(room.floor))})` : ''}`,
+        location: `🏨 Room #${escapeHtml(room?.roomNumber || 'N/A')}${room?.floor !== undefined && room?.floor !== null ? ` (Floor ${escapeHtml(String(room.floor))})` : ''}`,
         description: `<div>${escapeHtml(booking.numberOfGuests ? `${booking.numberOfGuests} guests` : 'N/A guests')}${booking.numberOfRooms ? ` • ${escapeHtml(String(booking.numberOfRooms))} room${booking.numberOfRooms > 1 ? 's' : ''}` : ''}</div>${roomPurpose ? `<div><strong>Purpose:</strong> ${escapeHtml(roomPurpose)}</div>` : ''}`,
       };
     }

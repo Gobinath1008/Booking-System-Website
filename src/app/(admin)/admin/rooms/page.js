@@ -4,19 +4,16 @@ import { motion } from 'framer-motion';
 import styles from '../admin.module.css';
 
 const EMPTY_FORM = {
-  name: '',
-  roomType: 'standard',
   roomNumber: '',
   floor: 1,
   occupancy: 2,
   location: '',
   city: '',
   state: '',
-  address: '',
-  zipCode: '',
   status: 'available',
   isActive: true,
-  hostelType: 'boys'
+  hostelType: 'boys',
+  ac: true
 };
 
 export default function RoomsPage() {
@@ -54,26 +51,23 @@ export default function RoomsPage() {
   const handleStartEdit = (room) => {
     setEditing(room);
     setFormData({
-      name: room.name || '',
-      roomType: room.roomType || 'standard',
       roomNumber: room.roomNumber || '',
       floor: room.floor || 1,
       occupancy: room.occupancy || 2,
       location: room.location || '',
       city: room.city || '',
       state: room.state || '',
-      address: room.address || '',
-      zipCode: room.zipCode || '',
       status: room.status || 'available',
       isActive: room.isActive !== false,
-      hostelType: room.hostelType || 'boys'
+      hostelType: room.hostelType || 'boys',
+      ac: room.ac !== false
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDeactivate = async (room) => {
-    if (!confirm(`Deactivate "${room.name}" (Room ${room.roomNumber})? It won't appear in user listings.`)) return;
+    if (!confirm(`Deactivate Room ${room.roomNumber}? It won't appear in user listings.`)) return;
     try {
       const res = await fetch(`/api/rooms/${room._id}`, { method: 'DELETE' });
       if (res.ok) {
@@ -88,7 +82,7 @@ export default function RoomsPage() {
   };
 
   const handleActivate = async (room) => {
-    if (!confirm(`Activate "${room.name}" (Room ${room.roomNumber})? It will appear in user listings.`)) return;
+    if (!confirm(`Activate Room ${room.roomNumber}? It will appear in user listings.`)) return;
     try {
       const res = await fetch(`/api/rooms/${room._id}`, {
         method: 'PUT',
@@ -107,7 +101,7 @@ export default function RoomsPage() {
   };
 
   const handleDelete = async (room) => {
-    if (!confirm(`Are you sure you want to permanently delete room "${room.name}" (Room ${room.roomNumber})? This action cannot be undone.`)) return;
+    if (!confirm(`Are you sure you want to permanently delete Room ${room.roomNumber}? This action cannot be undone.`)) return;
     try {
       const res = await fetch(`/api/rooms/${room._id}?permanent=true`, { method: 'DELETE' });
       if (res.ok) {
@@ -167,45 +161,21 @@ export default function RoomsPage() {
             style={{ marginBottom: '32px' }}
           >
             <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>
-              {editing ? `✏️ Edit Room: ${editing.name}` : '➕ Add New Room'}
+              {editing ? `✏️ Edit Room: ${editing.roomNumber}` : '➕ Add New Room'}
             </h2>
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+
                 <div className="form-group">
-                  <label className="form-label">Room Name</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="e.g. Hostal Room A"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Room Type</label>
+                  <label className="form-label">AC / Non-AC Facility</label>
                   <select
                     className="form-input"
-                    value={formData.roomType}
-                    onChange={(e) => setFormData({...formData, roomType: e.target.value})}
-                  >
-                    <option value="economy">Economy</option>
-                    <option value="standard">Standard</option>
-                    <option value="deluxe">Deluxe</option>
-                    <option value="family">Family</option>
-                    <option value="suite">Suite</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Hostel Type</label>
-                  <select
-                    className="form-input"
-                    value={formData.hostelType}
-                    onChange={(e) => setFormData({...formData, hostelType: e.target.value})}
+                    value={formData.ac ? "true" : "false"}
+                    onChange={(e) => setFormData({...formData, ac: e.target.value === "true"})}
                     required
                   >
-                    <option value="boys">Boys Hostel</option>
-                    <option value="girls">Girls Hostel</option>
+                    <option value="true">AC Room</option>
+                    <option value="false">Non-AC Room</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -290,28 +260,7 @@ export default function RoomsPage() {
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Address</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="Address"
-                    value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Zip Code</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="Zip Code"
-                    value={formData.zipCode}
-                    onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
-                    required
-                  />
-                </div>
+
                 <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', gridColumn: 'span 2' }}>
                   <input
                     type="checkbox"
@@ -358,7 +307,7 @@ export default function RoomsPage() {
                 <div style={{ padding: '32px 24px', display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center', textAlign: 'center', justifyContent: 'space-between', gap: 16 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                     <h3 style={{ fontSize: '18px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      {room.name}
+                      Room {room.roomNumber}
                       {room.isActive === false && (
                         <span className="badge badge-rejected" style={{ fontSize: '10px' }}>
                           Hidden
@@ -366,12 +315,12 @@ export default function RoomsPage() {
                       )}
                     </h3>
                     <p style={{ color: '#666', fontSize: '14px' }}>
-                      Room {room.roomNumber} • Floor {room.floor}
+                      Floor {room.floor}
                     </p>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, margin: '8px 0', fontSize: '13px', color: '#4b5563' }}>
-                      <div>🏢 Hostel: <strong style={{ textTransform: 'capitalize' }}>{room.hostelType || 'boys'}</strong></div>
-                      <div>Type: {room.roomType.toUpperCase()}</div>
+                      <div>🏢 Hostel: <strong>Boys Hostel</strong></div>
+                      <div>❄️ AC Type: <strong>{room.ac ? 'AC' : 'Non-AC'}</strong></div>
                       <div>👥 Occupancy: {room.occupancy} guests</div>
                       <div>📍 {room.location}</div>
                       <div style={{ color: '#999', fontSize: '12px' }}>{room.city}, {room.state}</div>
