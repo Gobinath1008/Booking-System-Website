@@ -59,6 +59,15 @@ export default function HallBookingPage() {
     return () => clearTimeout(t);
   }, [fetchHalls]);
 
+  useEffect(() => {
+    if (selectedDate) {
+      const element = document.getElementById('availability-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [selectedDate]);
+
   const handleDateClick = async (info) => {
     const dateStr = info.dateStr;
     const today = new Date().toISOString().split('T')[0];
@@ -158,6 +167,7 @@ export default function HallBookingPage() {
               width: '100%', padding: '14px 14px 14px 48px', borderRadius: '12px',
               border: '1px solid #e5e7eb', fontSize: '15px', background: '#fff'
             }}
+            suppressHydrationWarning
           />
         </div>
       </motion.div>
@@ -192,7 +202,7 @@ export default function HallBookingPage() {
 
       {/* Hall Grid */}
       {selectedDate && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div id="availability-section" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h2 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '20px' }}>
             Halls Available on {new Date(selectedDate).toLocaleDateString()}
           </h2>

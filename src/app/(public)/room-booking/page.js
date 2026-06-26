@@ -79,6 +79,15 @@ export default function RoomBookingPage() {
     return () => clearTimeout(t);
   }, [fetchRooms]);
 
+  useEffect(() => {
+    if (selectedDate) {
+      const element = document.getElementById('availability-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [selectedDate]);
+
   const handleDateClick = async (info) => {
     const dateStr = info.dateStr;
     const today = new Date().toISOString().split('T')[0];
@@ -192,6 +201,7 @@ export default function RoomBookingPage() {
                 border: '1px solid #e5e7eb', fontSize: '15px', background: '#fff',
                 outline: 'none'
               }}
+              suppressHydrationWarning
             />
           </div>
           <select
@@ -240,7 +250,7 @@ export default function RoomBookingPage() {
 
       {/* Room Grid */}
       {selectedDate && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div id="availability-section" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h2 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '20px' }}>
             Rooms Available on {new Date(selectedDate).toLocaleDateString()}
           </h2>

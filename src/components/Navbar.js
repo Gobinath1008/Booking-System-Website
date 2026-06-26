@@ -107,7 +107,7 @@ export default function Navbar({ user }) {
                 </div>
               </div>
               <Link href="/profile" className={styles.profileBtn}>👤 Profile</Link>
-              <button onClick={handleLogout} className={styles.logoutBtn}>
+              <button onClick={handleLogout} className={styles.logoutBtn} suppressHydrationWarning>
                 <span>🚪</span> Logout
               </button>
             </>
@@ -137,7 +137,7 @@ export default function Navbar({ user }) {
               <Link href="/profile" className={styles.mobileProfile} onClick={() => setMenuOpen(false)}>
                 👤 Profile
               </Link>
-              <button onClick={handleLogout} className={styles.mobileLogout}>🚪 Logout</button>
+              <button onClick={handleLogout} className={styles.mobileLogout} suppressHydrationWarning>🚪 Logout</button>
             </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 16px' }}>
